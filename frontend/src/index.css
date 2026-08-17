@@ -1,1 +1,32 @@
 @import "tailwindcss";
+
+@theme {
+  --color-bg: #fff8f8;
+  --color-fg: #1c1010;
+
+  --color-card: #ffffff;
+  --color-border: #ebd0cf;
+
+  --color-primary: #ad0f0c;
+  --color-primary-fg: #ffffff;
+
+  --color-muted: #f4dcdb;
+  --color-muted-fg: #755b5a;
+
+  --radius: 0.75rem;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-fg);
+  }
+}
