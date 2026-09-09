@@ -1,54 +1,119 @@
-import { createContext, useContext } from "react";
-import useLocalStorage from "../hooks/useLocalStorage";
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { cartApi } from '../services/api'
+import { useAuth } from './AuthContext'
 
-/**
- * Shopping cart state, persisted to localStorage.
- * Items store a snapshot of the product so the cart stays
- * accurate even if a product later changes or is deleted.
- */
-const CartContext = createContext(null);
+const CartContext = createContext()
 
-export const CartProvider = ({ children }) => {
-  const [items, setItems] = useLocalStorage("cart", []);
+const mapItems = (cart) =>
+  cart.items
+    .filter((i) => i.product)
+    .map((i) => ({
+      _id: i._id,
+      product: {
+        _id: i.product._id,
+        name: i.product.name,
+        price: i.product.price,
+        discountPrice: i.product.discountPrice,
+        stock: i.product.stock,
+        image: i.product.images?.[0] || null,
+        slug: i.product.slug,
+      },
+      quantity: i.quantity,
+      price: i.price,
+    }))
 
-  /** Adds a product to the cart (or increases its quantity). */
-  const addToCart = (product, qty = 1) =>
-    setItems((prev) => {
-      const existing = prev.find((item) => item.id === product.id);
-      if (existing) {
-        return prev.map((item) =>
-          item.id === product.id ? { ...item, qty: item.qty + qty } : item
-        );
-      }
-      return [
-        ...prev,
-        { id: product.id, name: product.name, price: product.price, image: product.images[0], qty },
-      ];
-    });
+const mapTotal = (mapped) =>
+  mapped.reduce((sum, i) => sum + i.price * i.quantity, 0)
 
-  /** Sets an exact quantity for an item (min 1). */
-  const updateQty = (id, qty) =>
-    setItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, qty: Math.max(1, qty) } : item))
-    );
+const mapCount = (mapped) =>
+  mapped.reduce((sum, i) => sum + i.quantity, 0)
 
-  const removeFromCart = (id) =>
-    setItems((prev) => prev.filter((item) => item.id !== id));
+export function CartProvider({ children }) {
+  const { user } = useAuth()
+  const [cartItems, setCartItems] = useState([])
+  const [loading, setLoading] = useState(() => !!user)
 
-  const clearCart = () => setItems([]);
+  useEffect(() => {
+    if (!user) return
 
-  // Derived values
-  const count = items.reduce((sum, item) => sum + item.qty, 0);
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+    let active = true
+    cartApi
+      .getCart()
+      .then((data) => {
+        if (!active) return
+        const mapped = mapItems(data)
+        setCartItems(mapped)
+      })
+      .catch(() => {
+        if (active) setCartItems([])
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+    return () => {
+      active = false
+    }
+  }, [user])
+
+  const handleCartPayload = (cart) => {
+    const mapped = mapItems(cart)
+    setCartItems(mapped)
+  }
+
+  const addToCart = useCallback(
+    async (productId, quantity = 1) => {
+      const data = await cartApi.addToCart(productId, quantity)
+      if (data.cart) handleCartPayload(data.cart)
+      return data
+    },
+    []
+  )
+
+  const updateItem = useCallback(async (productId, quantity) => {
+    const data = await cartApi.updateItem(productId, quantity)
+    if (data.cart) handleCartPayload(data.cart)
+    return data
+  }, [])
+
+  const removeItem = useCallback(async (productId) => {
+    const data = await cartApi.removeItem(productId)
+    if (data.cart) handleCartPayload(data.cart)
+    return data
+  }, [])
+
+  const clearCart = useCallback(async () => {
+    const data = await cartApi.clearCart()
+    if (data.cart) setCartItems([])
+    return data
+  }, [])
+
+  const items = user ? cartItems : []
+  const subtotal = user ? mapTotal(cartItems) : 0
+  const itemCount = user ? mapCount(cartItems) : 0
 
   return (
     <CartContext.Provider
-      value={{ items, addToCart, updateQty, removeFromCart, clearCart, count, subtotal }}
+      value={{
+        items,
+        subtotal,
+        itemCount,
+        loading,
+        addToCart,
+        updateItem,
+        removeItem,
+        clearCart,
+      }}
     >
       {children}
     </CartContext.Provider>
-  );
-};
+  )
+}
 
-/** Hook to access the cart. */
-export const useCart = () => useContext(CartContext);
+export const useCart = () => {
+  const context = useContext(CartContext)
+  if (!context) {
+    throw new Error('useCart must be used within a CartProvider')
+  }
+  return context
+}

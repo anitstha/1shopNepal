@@ -1,83 +1,144 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { categories } from "../../data/categories";
-import { headerData } from "../../data/headerData";
+import logo from "/public/logo.svg";
+import { MapPin, Phone, Mail, Globe, AtSign, Share2 } from "lucide-react";
+import { categoryApi } from "../../services/api";
 
-/** Quick links grouped in columns for the footer. */
-const shopLinks = categories.map((c) => ({
-  label: c.name,
-  to: `/category/${c.slug}`,
-}));
-
-const helpLinks = [
-  { label: "My Orders", to: "/my-orders" },
-  { label: "My Profile", to: "/profile" },
-  { label: "Shopping Cart", to: "/cart" },
+const fallbackCategories = [
+  "Electronics",
+  "Fashion",
+  "Groceries",
+  "Beauty",
+  "Home & Living",
+  "Accessories",
+];
+const supportLinks = [
+  { label: "Help Center", to: "/" },
+  { label: "Contact Us", to: "/" },
+  { label: "Shipping Info", to: "/" },
+  { label: "Returns & Refunds", to: "/" },
+  { label: "Privacy Policy", to: "/" },
 ];
 
-const Footer = () => {
+function Footer() {
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    categoryApi
+      .getCategories()
+      .then((res) => setCategories(res.categories))
+      .catch(() => setCategories([]));
+  }, []);
+
+  const footerCategories = categories.length
+    ? categories
+    : fallbackCategories.map((name) => ({ name, slug: null }));
+
   return (
-    <footer className="border-t border-neutral-200 bg-white">
-      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
-        <div className="grid grid-cols-1 gap-10 sm:grid-cols-3">
-          {/* Brand */}
+    <footer className="bg-gray-900 text-gray-300">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
           <div>
-            <Link to="/" className="inline-block">
-              <img src={headerData.logo} alt={headerData.logoAlt} className="h-8 w-auto object-contain" />
+            <Link to="/" className="flex items-center gap-2">
+              <span className="flex items-center justify-center w-9 h-9 bg-white">
+                <img src={logo} alt="1ShopNepal" />
+              </span>
             </Link>
-            <p className="mt-3 max-w-xs text-sm leading-relaxed text-neutral-500">
-              Online store delivering electronics, fashion and home essentials
-              across Nepal.
+            <p className="mt-4 text-sm leading-relaxed text-gray-400">
+              Nepal's one-stop online shopping destination. Shop thousands of
+              products from the comfort of your home, delivered right to your
+              door.
             </p>
+            <div className="mt-5 flex space-x-3">
+              {[
+                { icon: Globe, label: "Website" },
+                { icon: AtSign, label: "Email" },
+                { icon: Share2, label: "Social" },
+              ].map((social) => (
+                <a
+                  key={social.label}
+                  href="#"
+                  aria-label={social.label}
+                  className="p-2 rounded-lg bg-gray-800 text-gray-400 hover:bg-orange-600 hover:text-white transition-colors"
+                >
+                  <social.icon className="w-5 h-5" />
+                </a>
+              ))}
+            </div>
           </div>
 
-          {/* Shop */}
           <div>
-            <h3 className="text-sm font-medium text-neutral-900">Shop</h3>
-            <ul className="mt-3 space-y-2">
-              <li>
-                <Link to="/products" className="text-sm text-neutral-500 hover:text-neutral-900">
-                  All Products
-                </Link>
+            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
+              Categories
+            </h3>
+            <ul className="space-y-2.5">
+              {footerCategories.map((cat) => (
+                <li key={cat.slug || cat.name}>
+                  <Link
+                    to={cat.slug ? `/categories/${cat.slug}` : "/products"}
+                    className="text-sm text-gray-400 hover:text-orange-500 transition-colors"
+                  >
+                    {cat.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
+              Customer Service
+            </h3>
+            <ul className="space-y-2.5">
+              {supportLinks.map((item) => (
+                <li key={item.label}>
+                  <Link
+                    to={item.to}
+                    className="text-sm text-gray-400 hover:text-orange-500 transition-colors"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
+              Contact Us
+            </h3>
+            <ul className="space-y-3 text-sm text-gray-400">
+              <li className="flex items-start gap-3">
+                <MapPin className="w-5 h-5 shrink-0 text-orange-500" />
+                Kalimati, Kathmandu, Nepal
               </li>
-              {shopLinks.map((link) => (
-                <li key={link.to}>
-                  <Link to={link.to} className="text-sm text-neutral-500 hover:text-neutral-900">
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
+              <li className="flex items-center gap-3">
+                <Phone className="w-5 h-5 shrink-0 text-orange-500" />
+                +977-9803075499
+              </li>
+              <li className="flex items-center gap-3">
+                <Mail className="w-5 h-5 shrink-0 text-orange-500" />
+                support@1shopnepal.com
+              </li>
             </ul>
-          </div>
-
-          {/* Account */}
-          <div>
-            <h3 className="text-sm font-medium text-neutral-900">Account</h3>
-            <ul className="mt-3 space-y-2">
-              {helpLinks.map((link) => (
-                <li key={link.to}>
-                  <Link to={link.to} className="text-sm text-neutral-500 hover:text-neutral-900">
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-6 text-sm text-neutral-500">Kathmandu, Nepal</p>
-            <p className="mt-1 text-sm text-neutral-500">support@1shopnepal.com</p>
+            <div className="mt-5 p-3 rounded-xl bg-gray-800">
+              <p className="text-xs text-gray-400">
+                <span className="font-semibold text-white">Support hours:</span>
+                Sun-Fri, 9 AM - 6 PM (NPT)
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Bottom bar */}
-        <div className="mt-10 flex flex-col justify-between gap-2 border-t border-neutral-100 pt-5 sm:flex-row">
-          <p className="text-xs text-neutral-400">
-            © {new Date().getFullYear()} 1ShopNepal
+        <div className="mt-10 pt-6 border-t border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="text-xs text-gray-500">
+            &copy; {new Date().getFullYear()} 1ShopNepal. All rights reserved.
           </p>
-          <p className="text-xs text-neutral-400">
-            Cash on Delivery · eSewa · Khalti · Bank Transfer
-          </p>
+          <p className="text-xs text-gray-600">Proudly made in Nepal 🇳🇵</p>
         </div>
       </div>
     </footer>
   );
-};
+}
 
 export default Footer;

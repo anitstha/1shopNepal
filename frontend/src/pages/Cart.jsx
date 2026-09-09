@@ -1,171 +1,192 @@
-import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
-import EmptyState from "../components/ui/EmptyState";
-import useDocumentTitle from "../hooks/useDocumentTitle";
-import { useCart } from "../context/CartContext";
-import { formatPrice } from "../utils/format";
-import { FREE_DELIVERY_THRESHOLD, DELIVERY_FEE } from "../data/products";
+import { Link } from 'react-router-dom'
+import { Minus, Plus, Trash2, ShoppingCart, ArrowRight } from 'lucide-react'
+import Seo from '../components/common/Seo'
+import { useCart } from '../context/CartContext'
+import { useAuth } from '../context/AuthContext'
 
-const Cart = () => {
-  useDocumentTitle("Shopping Cart");
-  const navigate = useNavigate();
-  const { items, updateQty, removeFromCart, subtotal } = useCart();
+const SHIPPING_THRESHOLD = 10000
+const SHIPPING_COST = 200
 
-  const deliveryFee =
-    items.length === 0 || subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
-  const total = subtotal + deliveryFee;
-  const amountToFreeDelivery = Math.max(0, FREE_DELIVERY_THRESHOLD - subtotal);
+function Cart() {
+  const { items, subtotal, itemCount, loading, updateItem, removeItem, clearCart } =
+    useCart()
+  const { user } = useAuth()
 
-  // Empty cart state
-  if (items.length === 0) {
+  if (!user) {
     return (
-      <section className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
-        <EmptyState
-          icon={ShoppingBag}
-          title="Your cart is empty"
-          description="Looks like you haven't added anything yet. Explore the store to find something you love."
+      <div className="max-w-2xl mx-auto px-4 py-24 text-center">
+        <Seo title="Shopping Cart | 1Shop Nepal" description="Your 1Shop Nepal shopping cart." canonical="/cart" noindex />
+        <ShoppingCart className="w-12 h-12 mx-auto text-gray-300" />
+        <h1 className="mt-4 text-2xl font-bold text-gray-900">Your Cart is Waiting</h1>
+        <p className="mt-2 text-gray-600">
+          Please log in to view and manage your shopping cart.
+        </p>
+        <Link
+          to="/login"
+          className="inline-block mt-6 px-6 py-3 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700"
         >
-          <Link
-            to="/products"
-            className="inline-block rounded-lg bg-neutral-950 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-neutral-800"
-          >
-            Start Shopping
-          </Link>
-        </EmptyState>
-      </section>
-    );
+          Log In
+        </Link>
+      </div>
+    )
   }
 
-  return (
-    <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-      <h1 className="text-2xl font-semibold tracking-tight text-neutral-900 sm:text-3xl">
-        Shopping Cart
-      </h1>
-      <p className="mt-2 text-sm text-neutral-500">
-        {items.length} item{items.length !== 1 && "s"} in your cart
-      </p>
+  if (loading) {
+    return (
+      <div className="max-w-6xl mx-auto px-4 py-24 text-center">
+        <div className="animate-spin w-8 h-8 border-4 border-orange-600 border-t-transparent rounded-full mx-auto" />
+      </div>
+    )
+  }
 
-      {/* Free delivery progress hint */}
-      {amountToFreeDelivery > 0 && (
-        <p className="mt-4 rounded-lg border border-neutral-200 px-4 py-3 text-sm text-neutral-600">
-          Add {formatPrice(amountToFreeDelivery)} more to get free delivery.
+  if (items.length === 0) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-24 text-center">
+        <Seo title="Shopping Cart | 1Shop Nepal" description="Your 1Shop Nepal shopping cart." canonical="/cart" noindex />
+        <ShoppingCart className="w-12 h-12 mx-auto text-gray-300" />
+        <h1 className="mt-4 text-2xl font-bold text-gray-900">Your Cart is Empty</h1>
+        <p className="mt-2 text-gray-600">
+          Looks like you haven't added anything yet.
         </p>
-      )}
+        <Link
+          to="/products"
+          className="inline-block mt-6 px-6 py-3 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700"
+        >
+          Start Shopping
+        </Link>
+      </div>
+    )
+  }
 
-      <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_360px]">
-        {/* ------------------------- Cart items ------------------------- */}
-        <div className="space-y-4">
+  const shipping = subtotal >= SHIPPING_THRESHOLD || subtotal === 0 ? 0 : SHIPPING_COST
+  const grandTotal = subtotal + shipping
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <Seo title="Shopping Cart | 1Shop Nepal" description="Review the items in your 1Shop Nepal shopping cart and proceed to checkout." canonical="/cart" noindex />
+      <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
+      <p className="mt-1 text-gray-600">{itemCount} item(s) in your cart</p>
+
+      <div className="mt-8 grid lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-4">
           {items.map((item) => (
             <div
-              key={item.id}
-              className="flex gap-4 rounded-2xl border border-neutral-200 bg-white p-4"
+              key={item._id}
+              className="flex gap-4 bg-white rounded-2xl border border-gray-200 p-4"
             >
-              <img
-                src={item.image}
-                alt={item.name}
-                className="h-24 w-24 shrink-0 rounded-xl object-cover sm:h-28 sm:w-28"
-              />
+              <Link to={`/products/${item.product.slug || item.product._id}`} className="shrink-0">
+                {item.product.image ? (
+                  <img
+                    src={item.product.image}
+                    alt={item.product.name}
+                    className="w-24 h-24 rounded-xl object-cover"
+                  />
+                ) : (
+                  <div className="w-24 h-24 rounded-xl bg-gray-200" />
+                )}
+              </Link>
 
-              <div className="flex flex-1 flex-col justify-between">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h3 className="line-clamp-2 text-sm font-semibold text-neutral-900">
-                      {item.name}
-                    </h3>
-                    <p className="mt-1 text-sm text-neutral-500">
-                      {formatPrice(item.price)} each
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => removeFromCart(item.id)}
-                    aria-label={`Remove ${item.name}`}
-                    className="rounded-lg p-2 text-neutral-400 transition-colors hover:bg-red-50 hover:text-red-600"
+              <div className="flex-1 flex flex-col">
+                <div className="flex items-start justify-between gap-2">
+                  <Link
+                    to={`/products/${item.product._id}`}
+                    className="font-semibold text-gray-900 hover:text-orange-600 line-clamp-1"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    {item.product.name}
+                  </Link>
+                  <button
+                    onClick={() => removeItem(item.product._id)}
+                    className="text-gray-400 hover:text-red-600"
+                    aria-label="Remove item"
+                  >
+                    <Trash2 className="w-5 h-5" />
                   </button>
                 </div>
 
-                <div className="flex items-end justify-between">
-                  {/* Quantity stepper */}
-                  <div className="flex items-center rounded-lg border border-neutral-200">
+                <p className="text-sm text-gray-500 mt-0.5">
+                  Rs. {item.price.toLocaleString()} each
+                </p>
+
+                <div className="mt-auto flex items-center justify-between pt-3">
+                  <div className="flex items-center border border-gray-300 rounded-lg">
                     <button
-                      type="button"
-                      onClick={() => updateQty(item.id, item.qty - 1)}
+                      onClick={() =>
+                        updateItem(item.product._id, Math.max(1, item.quantity - 1))
+                      }
+                      className="p-2 hover:bg-gray-50"
                       aria-label="Decrease quantity"
-                      className="p-2 text-neutral-600 transition-colors hover:text-neutral-950 disabled:opacity-30"
-                      disabled={item.qty <= 1}
                     >
-                      <Minus className="h-3.5 w-3.5" />
+                      <Minus className="w-4 h-4" />
                     </button>
-                    <span className="w-8 text-center text-sm font-bold">{item.qty}</span>
+                    <span className="w-10 text-center font-medium">{item.quantity}</span>
                     <button
-                      type="button"
-                      onClick={() => updateQty(item.id, item.qty + 1)}
+                      onClick={() =>
+                        updateItem(item.product._id, item.quantity + 1)
+                      }
+                      disabled={
+                        item.quantity >= item.product.stock
+                      }
+                      className="p-2 hover:bg-gray-50 disabled:opacity-40"
                       aria-label="Increase quantity"
-                      className="p-2 text-neutral-600 transition-colors hover:text-neutral-950"
                     >
-                      <Plus className="h-3.5 w-3.5" />
+                      <Plus className="w-4 h-4" />
                     </button>
                   </div>
-
-                  <p className="text-base font-bold text-neutral-950">
-                    {formatPrice(item.price * item.qty)}
-                  </p>
+                  <span className="font-bold text-gray-900">
+                    Rs. {(item.price * item.quantity).toLocaleString()}
+                  </span>
                 </div>
               </div>
             </div>
           ))}
 
-          <Link
-            to="/products"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-neutral-500 transition-colors hover:text-neutral-900"
-          >
-            <ArrowLeft className="h-4 w-4" /> Continue shopping
-          </Link>
+          <div className="flex justify-end">
+            <button
+              onClick={clearCart}
+              className="text-sm text-gray-500 hover:text-red-600"
+            >
+              Clear Cart
+            </button>
+          </div>
         </div>
 
-        {/* -------------------------- Summary --------------------------- */}
-        <aside className="h-fit rounded-2xl border border-neutral-200 bg-white p-6 lg:sticky lg:top-24">
-          <h2 className="text-base font-semibold text-neutral-900">Order Summary</h2>
-
-          <dl className="mt-5 space-y-3 text-sm">
-            <div className="flex justify-between">
-              <dt className="text-neutral-500">Subtotal</dt>
-              <dd className="font-semibold">{formatPrice(subtotal)}</dd>
+        <div className="lg:col-span-1">
+          <div className="bg-white rounded-2xl border border-gray-200 p-6 sticky top-24">
+            <h2 className="text-lg font-bold text-gray-900 mb-4">Order Summary</h2>
+            <div className="space-y-3 text-sm">
+              <div className="flex justify-between text-gray-600">
+                <span>Subtotal</span>
+                <span className="font-medium text-gray-900">
+                  Rs. {subtotal.toLocaleString()}
+                </span>
+              </div>
+              <div className="flex justify-between text-gray-600">
+                <span>Shipping</span>
+                <span className="font-medium text-gray-900">
+                  {shipping === 0 ? 'Free' : `Rs. ${shipping.toLocaleString()}`}
+                </span>
+              </div>
+              {shipping > 0 && (
+                <p className="text-xs text-gray-400">
+                  Add Rs. {(SHIPPING_THRESHOLD - subtotal).toLocaleString()} more for free shipping
+                </p>
+              )}
+              <div className="border-t border-gray-200 pt-3 flex justify-between text-gray-900 font-bold">
+                <span>Total</span>
+                <span>Rs. {grandTotal.toLocaleString()}</span>
+              </div>
             </div>
-            <div className="flex justify-between">
-              <dt className="text-neutral-500">Delivery</dt>
-              <dd className="font-semibold">
-                {deliveryFee === 0 ? (
-                  <span className="text-emerald-600">FREE</span>
-                ) : (
-                  formatPrice(deliveryFee)
-                )}
-              </dd>
-            </div>
-            <hr className="border-neutral-100" />
-            <div className="flex justify-between text-base">
-              <dt className="font-medium">Total</dt>
-              <dd className="font-semibold">{formatPrice(total)}</dd>
-            </div>
-          </dl>
-
-          <button
-            type="button"
-            onClick={() => navigate("/checkout")}
-            className="mt-6 w-full rounded-md bg-neutral-900 py-3 text-sm font-medium text-white transition-colors hover:bg-neutral-700"
-          >
-            Proceed to Checkout
-          </button>
-
-          <p className="mt-3 text-center text-xs text-neutral-400">
-            Cash on Delivery available across Nepal
-          </p>
-        </aside>
+            <Link
+              to="/checkout"
+              className="mt-5 w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700"
+            >
+              Proceed to Checkout <ArrowRight className="w-5 h-5" />
+            </Link>
+          </div>
+        </div>
       </div>
-    </section>
-  );
-};
+    </div>
+  )
+}
 
-export default Cart;
+export default Cart

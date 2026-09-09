@@ -1,87 +1,79 @@
-import { createContext, useContext } from "react";
-import useLocalStorage from "../hooks/useLocalStorage";
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { authApi } from '../services/api'
+import { saveToken, getToken, removeToken } from '../utils/auth'
 
-/**
- * Mock authentication.
- * NOTE: This is a frontend-only demo. Passwords are stored in plain
- * localStorage — replace with a real backend before production.
- */
+const AuthContext = createContext()
 
-// Seeded admin account available out of the box for the demo.
-const SEED_USERS = [
-  {
-    id: 1,
-    name: "Store Admin",
-    email: "admin@1shopnepal.com",
-    password: "admin123",
-    phone: "9800000000",
-    role: "admin",
-  },
-];
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(() => !!getToken())
 
-const AuthContext = createContext(null);
+  useEffect(() => {
+    if (!getToken()) return
 
-export const AuthProvider = ({ children }) => {
-  // All registered accounts + seeded users
-  const [users, setUsers] = useLocalStorage("users", SEED_USERS);
-  // Currently logged-in user (null when logged out)
-  const [user, setUser] = useLocalStorage("currentUser", null);
+    let active = true
 
-  /**
-   * Attempts to log a user in. Returns { ok, error, user }.
-   */
-  const login = (email, password) => {
-    const found = users.find(
-      (u) => u.email.toLowerCase() === email.toLowerCase().trim()
-    );
+    authApi
+      .getMe()
+      .then((data) => {
+        if (active) setUser(data)
+      })
+      .catch(() => {
+        if (active) {
+          removeToken()
+          setUser(null)
+        }
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
 
-    if (!found || found.password !== password) {
-      return { ok: false, error: "Invalid email or password." };
+    return () => {
+      active = false
     }
+  }, [])
 
-    // Never keep the password on the session object
-    const { password: _pwd, ...safeUser } = found;
-    setUser(safeUser);
-    return { ok: true, user: safeUser };
-  };
+  const login = useCallback(async (credentials) => {
+    const data = await authApi.login(credentials)
+    saveToken(data.token)
+    setUser(data)
+    return data
+  }, [])
 
-  /**
-   * Registers a new customer account. Returns { ok, error }.
-   */
-  const register = ({ name, email, phone, password }) => {
-    if (users.some((u) => u.email.toLowerCase() === email.toLowerCase())) {
-      return { ok: false, error: "An account with this email already exists." };
-    }
+  const register = useCallback(async (userData) => {
+    const data = await authApi.register(userData)
+    saveToken(data.token)
+    setUser(data)
+    return data
+  }, [])
 
-    const newUser = {
-      id: Date.now(),
-      name,
-      email,
-      phone,
-      password,
-      role: "customer",
-    };
-    setUsers((prev) => [...prev, newUser]);
-
-    const { password: _pwd, ...safeUser } = newUser;
-    setUser(safeUser); // auto login after signup
-    return { ok: true };
-  };
-
-  /** Updates the logged-in user's profile fields. */
-  const updateProfile = (patch) =>
-    setUser((prev) => ({ ...prev, ...patch }));
-
-  const logout = () => setUser(null);
+  const logout = useCallback(() => {
+    removeToken()
+    setUser(null)
+  }, [])
 
   return (
     <AuthContext.Provider
-      value={{ user, isLoggedIn: Boolean(user), login, register, logout, updateProfile }}
+      value={{
+        user,
+        loading,
+        login,
+        register,
+        logout,
+        isAuthenticated: !!user,
+        isAdmin: !!user && user.role === 'admin',
+      }}
     >
       {children}
     </AuthContext.Provider>
-  );
-};
+  )
+}
 
-/** Hook to access auth state and actions. */
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext)
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider')
+  }
+  return context
+}
