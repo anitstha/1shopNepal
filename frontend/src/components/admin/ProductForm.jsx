@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { Upload, X, Loader2, Image as ImageIcon } from 'lucide-react'
-import { productApi, categoryApi, uploadApi } from '../../services/api'
+import { X, Loader2, Image as ImageIcon } from 'lucide-react'
+import { productApi, categoryApi } from '../../services/api'
 
 const EMPTY_FORM = {
   name: '',
@@ -23,9 +23,6 @@ function ProductForm({ isEdit = false }) {
   const [categories, setCategories] = useState([])
   const [imageUrls, setImageUrls] = useState([])
   const [imageUrlInput, setImageUrlInput] = useState('')
-  const [cloudinaryStatus, setCloudinaryStatus] = useState({ checked: false, enabled: false })
-  const [selectedFiles, setSelectedFiles] = useState([])
-  const [uploading, setUploading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -36,13 +33,6 @@ function ProductForm({ isEdit = false }) {
       .getCategories()
       .then((res) => setCategories(res.categories))
       .catch(() => {})
-
-    uploadApi
-      .getConfig()
-      .then((res) =>
-        setCloudinaryStatus({ checked: true, enabled: res.cloudinaryConfigured })
-      )
-      .catch(() => setCloudinaryStatus({ checked: true, enabled: false }))
   }, [])
 
   useEffect(() => {
@@ -86,42 +76,6 @@ function ProductForm({ isEdit = false }) {
 
   const removeImage = (index) =>
     setImageUrls((arr) => arr.filter((_, i) => i !== index))
-
-  const handleFiles = (e) => {
-    const files = Array.from(e.target.files || [])
-    if (files.length === 0) return
-    setError('')
-    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-    const valid = files.filter((f) => allowed.includes(f.type))
-    const totalImages = selectedFiles.length + imageUrls.length + valid.length
-    if (totalImages > 6) {
-      setError('You can have up to 6 images per product')
-      e.target.value = ''
-      return
-    }
-    if (valid.length !== files.length) {
-      setError('Only JPG, PNG, WEBP and GIF images are allowed')
-    }
-    setSelectedFiles((prev) => [...prev, ...valid])
-    e.target.value = ''
-  }
-
-  const uploadSelected = async () => {
-    if (selectedFiles.length === 0) return
-    setUploading(true)
-    setError('')
-    try {
-      const res = await uploadApi.uploadImages(selectedFiles)
-      setImageUrls((prev) => [...prev, ...res.images])
-      setSelectedFiles([])
-      toast.success('Images uploaded')
-    } catch (err) {
-      setError(err.message)
-      toast.error(err.message)
-    } finally {
-      setUploading(false)
-    }
-  }
 
   const parseSpecs = () => {
     const raw = form.specifications.trim()
@@ -336,63 +290,27 @@ function ProductForm({ isEdit = false }) {
             </div>
           )}
 
-          {cloudinaryStatus.checked && cloudinaryStatus.enabled ? (
-            <div className="border-2 border-dashed border-gray-300 rounded-xl p-4">
-              <label className="inline-flex items-center gap-2 cursor-pointer text-sm font-medium text-orange-600">
-                <Upload className="w-4 h-4" />
-                Choose image files
-                <input type="file" accept="image/*" multiple onChange={handleFiles} className="hidden" />
-              </label>
-              {selectedFiles.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-3 items-center">
-                  {selectedFiles.map((f, i) => (
-                    <span key={i} className="text-xs bg-gray-100 px-2 py-1 rounded">
-                      {f.name}
-                    </span>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={uploadSelected}
-                    disabled={uploading}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-orange-600 hover:bg-orange-700 rounded-lg disabled:opacity-50"
-                  >
-                    {uploading ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <Upload className="w-3.5 h-3.5" />
-                    )}
-                    Upload
-                  </button>
-                </div>
-              )}
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                value={imageUrlInput}
+                onChange={(e) => setImageUrlInput(e.target.value)}
+                className={`${inputCls} pl-9`}
+                placeholder="Paste an image URL"
+              />
             </div>
-          ) : (
-            <>
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input
-                    value={imageUrlInput}
-                    onChange={(e) => setImageUrlInput(e.target.value)}
-                    className={`${inputCls} pl-9`}
-                    placeholder="Paste an image URL"
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={addImageUrl}
-                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-sm font-medium rounded-lg"
-                >
-                  Add URL
-                </button>
-              </div>
-              {cloudinaryStatus.checked && (
-                <p className="text-xs text-gray-500 mt-2">
-                  Cloudinary is not configured — add images by URL. Configure Cloudinary to enable file uploads.
-                </p>
-              )}
-            </>
-          )}
+            <button
+              type="button"
+              onClick={addImageUrl}
+              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-sm font-medium rounded-lg"
+            >
+              Add URL
+            </button>
+          </div>
+          <p className="text-xs text-gray-500 mt-2">
+            Images are added by URL. Paste up to 6 image links to set the product's images.
+          </p>
         </div>
 
         <button

@@ -121,12 +121,6 @@ export const recommendationApi = {
 }
 
 export const uploadApi = {
-  getConfig: () => request('/upload/config'),
-  uploadImages: (files) => {
-    const formData = new FormData()
-    files.forEach((file) => formData.append('images', file))
-    return requestMultipart('/upload', formData)
-  },
   uploadProfileImage: (file) => {
     const formData = new FormData()
     formData.append('image', file)
@@ -206,6 +200,19 @@ export const orderApi = {
     }),
 }
 
+export const paymentApi = {
+  initiateEsewa: (data) =>
+    request('/payments/esewa/initiate', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  verifyEsewa: (data) =>
+    request('/payments/esewa/verify', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+}
+
 export const adminApi = {
   getStats: () => request('/admin/stats'),
   getOrders: (params = {}) => {
@@ -235,19 +242,6 @@ export const adminApi = {
     ).toString()
     return request(`/admin/reviews${query ? `?${query}` : ''}`)
   },
-}
-
-export const paymentApi = {
-  initiateKhalti: (orderId) =>
-    request('/payments/khalti/initiate', {
-      method: 'POST',
-      body: JSON.stringify({ orderId }),
-    }),
-  verifyKhalti: (pidx) =>
-    request('/payments/khalti/verify', {
-      method: 'POST',
-      body: JSON.stringify({ pidx }),
-    }),
 }
 
 export default request

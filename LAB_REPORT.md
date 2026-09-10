@@ -20,14 +20,15 @@
 **1ShopNepal** is a full-stack e-commerce web application built as a B.Sc. CSIT 6th Semester
 laboratory project. It allows customers to browse an online catalog, search and filter products,
 manage a shopping cart and wishlist, write reviews and ratings, and complete purchases using
-**Cash on Delivery (COD)** or the **Khalti** online payment gateway (with a built-in mock mode for
-development). The application also provides an administrator panel for managing products,
-categories, orders, users, and reviews.
+**Cash on Delivery (COD)** or the **eSewa** online wallet via the official **eSewa ePay (V2)**
+payment gateway, integrated and verified against the real eSewa **TEST/sandbox** environment. The
+application also provides an administrator panel for managing products, categories, orders, users,
+and reviews.
 
 The project demonstrates a modern **MERN (MongoDB, Express.js, React, Node.js)** architecture with a
 RESTful API backend and a responsive single-page-application (SPA) frontend. It covers end-to-end
 e-commerce functionality: **authentication, catalog management, shopping cart, wishlist, product
-reviews/ratings, checkout, Khalti payment, and order management**, with all price calculations and
+reviews/ratings, checkout, eSewa payment, and order management**, with all price calculations and
 stock control handled securely on the server.
 
 Technical terms used in this report:
@@ -50,8 +51,8 @@ Technical terms used in this report:
 3. To provide a browsable, searchable, and filterable product catalog with category organization.
 4. To implement a shopping cart and wishlist with real-time quantity and stock validation.
 5. To support product reviews and ratings with automatically computed average ratings.
-6. To implement a checkout flow for **Cash on Delivery** and **Khalti** payments with server-side
-   price calculation, inventory reduction, and order tracking statuses.
+6. To implement a checkout flow for **Cash on Delivery** and **eSewa** (ePay V2, TEST sandbox)
+   payments with server-side price calculation, inventory reduction, and order tracking statuses.
 7. To provide an admin interface for managing products, categories, orders, users, and reviews.
 8. To add a rule-based **product recommendation** feature and basic **SEO** (metadata, sitemap,
    robots.txt).
@@ -71,7 +72,7 @@ Technical terms used in this report:
 | **lucide-react** | 1.43 | Icon library |
 | **react-toastify** | 11.1 | Toast / notification messages |
 | **jsonwebtoken + bcrypt** | 9 / 6 | Authentication & password hashing |
-| **Multer + Cloudinary** | 2.x | Product image upload/storage |
+| **Multer** | 2.x | Profile image upload (stored locally) |
 | **CORS + dotenv** | 2.x / 16.x | Cross-origin access & configuration |
 
 ## 4. System Architecture
@@ -112,13 +113,13 @@ The application follows a **three-tier client–server architecture**:
 ├── backend/                  # Express API
 │   ├── app.js                # App setup + route registration
 │   ├── server.js             # Entry point (env, DB connect, listen)
-│   ├── config/               # DB connection, Cloudinary config
+│   ├── config/               # DB connection
 │   ├── controllers/          # Request handlers (auth, product, cart, order, ...)
 │   ├── middleware/           # authMiddleware, errorMiddleware, requestLogger, uploadMiddleware
 │   ├── models/               # Mongoose schemas & models
 │   ├── routes/               # API route definitions (13 route files)
 │   ├── services/             # recommendationService.js (scoring logic)
-│   ├── utils/                # asyncHandler, generateToken, generateSlug, khalti
+│   ├── utils/                # asyncHandler, generateToken, generateSlug, esewa
 │   ├── seeder.js             # Seed categories
 │   └── seedProducts.js       # Seed products
 └── frontend/                 # React SPA
@@ -153,7 +154,11 @@ The application follows a **three-tier client–server architecture**:
 - Product details page: image gallery, discount/price, stock status, specifications, plus
   recommended/related products.
 - Product lookup by MongoDB id **or** URL-friendly slug.
-- Admin: create, edit, delete, and upload product images (Cloudinary or plain image URLs).
+- Admin: create, edit, delete, and set product images via image URLs.
+- Demo catalog: the `seed:products` script seeds **41 realistic products** across the 6 categories
+  (9 electronics, 7 fashion, 7 groceries, 6 beauty, 6 home-living, 6 accessories). Each product uses
+  a real brand name (Samsung, Apple, Nike, Casio, etc.), realistic NPR pricing, and **two verified,
+  working image URLs** each — every seeded image was checked and returns HTTP 200.
 
 ### 5.3 Shopping Cart & Wishlist
 - One cart persisted per user; add/update/remove/clear with **server-side stock validation** and
@@ -171,14 +176,14 @@ The application follows a **three-tier client–server architecture**:
 ### 5.5 Checkout & Orders
 - Checkout collects the shipping address (name, phone, street, city, district, zip) and a payment
   method.
-- Payment methods: **Cash on Delivery (COD)** and **Khalti** (card/online payment, with a mock mode
-  for development). **eSewa and bank payment are not implemented** — they appear only as display
-  labels.
+- Payment methods: **Cash on Delivery (COD)** and **eSewa** (real eSewa ePay V2 integration against
+  the eSewa TEST/sandbox gateway). Bank transfer appears as a "coming soon" label only.
 - **All prices are computed on the server** from the current database prices — client totals are
   never trusted.
-- Subtotal, shipping fee (free above Rs. 10,000, otherwise Rs. 200), and grand total.
-- Placing an order **decrements product stock** (for COD immediately, for Khalti when payment is
-  confirmed) and **clears the cart**.
+- Subtotal, shipping fee (**free — the delivery charge is Rs. 0**), and grand total. eSewa sees
+  `amount = subtotal`, `product_delivery_charge = 0`, and `total_amount = subtotal`.
+- Placing an order **decrements product stock** (for COD immediately, for eSewa when the payment is
+  server-confirmed) and **clears the cart**.
 - Order history page and a per-order detail page.
 - Admin can move orders through statuses: **Pending → Confirmed → Processing → Shipped →
   Delivered** (or **Cancelled**). Cancelling a pending order restores stock.
@@ -207,8 +212,6 @@ header `Authorization: Bearer <token>`. A detailed version of this table is in S
 | POST | `/products` | admin | Create product |
 | PUT / DELETE | `/products/:id` | admin | Update / delete product |
 | GET | `/recommendations/:productId` | public | Recommended + related products |
-| GET | `/upload/config` | public | Cloudinary upload status |
-| POST | `/upload` | admin | Upload up to 6 product images |
 | GET/POST | `/cart` | user | Read cart / add item |
 | PUT/DELETE | `/cart/:productId` | user | Update quantity / remove item |
 | DELETE | `/cart` | user | Clear cart |
@@ -220,12 +223,12 @@ header `Authorization: Bearer <token>`. A detailed version of this table is in S
 | POST | `/products/:productId/reviews` | user | Create review (one per product) |
 | PUT | `/reviews/:id` | owner | Edit review |
 | DELETE | `/reviews/:id` | owner/admin | Delete review |
-| POST | `/orders` | user | Place order (shippingAddress + `cod`/`khalti`) |
+| POST | `/orders` | user | Place a COD order (shippingAddress + `cod`) |
 | GET | `/orders` | user | My orders |
 | GET | `/orders/:id` | owner/admin | Order detail |
 | PUT | `/orders/:id/status` | admin | Update order/payment status |
-| POST | `/payments/khalti/initiate` | user | Start Khalti payment for an order |
-| POST | `/payments/khalti/verify` | user/admin | Confirm payment and finalize order |
+| POST | `/payments/esewa/initiate` | user | Validate cart, create a pending eSewa order, return signed eSewa payment data |
+| POST | `/payments/esewa/verify` | user | Verify the redirect callback, confirm payment, claim + finalize the order |
 | GET | `/admin/stats` | admin | Dashboard statistics |
 | GET | `/admin/orders` | admin | All orders (filter/search/paginate) |
 | GET | `/admin/users` | admin | All users (search) |
@@ -243,12 +246,14 @@ Prices, stock, and statuses are always decided on the server:
 - **Cart pricing:** the effective price is stored in each cart item when it is added/updated.
 - **Order pricing:** recomputed at order time from the **current** product prices in the database —
   the request body cannot influence subtotal/shipping/total.
-- **Shipping:** free when subtotal ≥ Rs. 10,000 (or cart is empty), otherwise Rs. 200.
+- **Shipping:** free for every order — the delivery charge is Rs. 0 (the eSewa form also sends
+  `product_delivery_charge = 0`).
 - **Inventory:** adding to cart and placing an order both enforce `quantity ≤ stock`. Placing an
   order subtracts stock; cancelling a pending order adds it back (guarded by a `stockDeducted` flag
   so stock is never restored twice).
-- **Stock decrement with rollback:** if Khalti payment succeeds but the stock check fails for some
-  items, the other items are automatically restocked and the order is kept pending.
+- **Stock decrement timing:** COD orders decrement stock immediately at placement; eSewa orders
+  decrement stock only after the backend server-to-server confirms the payment with eSewa. A pending
+  order cancelled by an admin restores stock exactly once (guarded by `stockDeducted`).
 - **Reviews:** the unique `(user, product)` index guarantees one review per user per product; after
   every create/update/delete, `product.rating` becomes the rounded average and `product.reviewCount`
   the number of reviews.
@@ -272,9 +277,11 @@ Prices, stock, and statuses are always decided on the server:
 - **Wishlist** — one per user (`user` unique); `products[]` of product refs.
 - **Order** — `user` (ref), `items[]` (product ref, name, quantity, price **snapshot**),
   `shippingAddress` (fullName, phone, addressLine, city, district, zipCode), `subtotal`,
-  `shippingCost`, `totalAmount`, `paymentMethod`, `paymentStatus` (`pending|paid|failed|refunded`),
-  `orderStatus` (`pending|confirmed|processing|shipped|delivered|cancelled`), `transactionId?`,
-  `stockDeducted` (boolean), `pidx/paymentUrl` (Khalti session), `isMockPayment`.
+  `shippingCost`, `totalAmount`, `paymentMethod` (`cod|esewa`), `paymentStatus`
+  (`pending|paid|failed|refunded`), `orderStatus`
+  (`pending|confirmed|processing|shipped|delivered|cancelled`), `transactionId` (the eSewa
+  `transaction_uuid` generated at initiation), `esewaRefId` (eSewa's `transaction_code` after a
+  confirmed payment), `stockDeducted` (boolean).
 - **Review** — `user` (ref), `product` (ref), `rating` (1–5), `comment` (max 1000); unique
   `(user, product)` compound index.
 
@@ -285,23 +292,28 @@ Prices, stock, and statuses are always decided on the server:
    is rejected immediately).
 2. **Server-side price integrity** — order totals are derived only from products in the database,
    never from the client, preventing price-tampering attacks.
-3. **Stock management with rollback** — atomic stock checks during cart and order operations; a
-   failed Khalti payment can rescind stock changes automatically.
+3. **Stock management** — atomic stock checks during cart and order operations; COD deducts at
+   placement while eSewa deducts only after server-side payment confirmation; a cancelled pending
+   order restores stock once.
 4. **Review rating aggregation** — MongoDB aggregation computes the average rating + count after
    every review operation and stores them on the product for fast reads.
 5. **Explainable recommendation engine** — a simple weighted heuristic (no machine learning) with
    human-readable "why" reasons shown in the UI (see Section 25).
-6. **Mock + live payment gateway** — the Khalti integration automatically runs in a clearly-labelled
-   simulated mode when `KHALTI_SECRET_KEY` is absent, so the whole checkout flow works without real
-   credentials (see Section 24).
+6. **Real payment gateway (eSewa TEST)** — a complete eSewa ePay V2 checkout using HMAC-SHA256
+   request signatures and a server-to-server status check, verified against eSewa's TEST/sandbox
+   environment with the official test merchant credentials (see Section 24).
 7. **SEO support** — per-page meta tags (title, description, Open Graph, Twitter, canonical),
    JSON-LD structured data on the home page, a generated XML sitemap and robots.txt (see Section 32).
 8. **Central request layer** — a single `request()` wrapper in `src/services/api.js` centralizes
    JSON, token attachment, and error handling.
 9. **Consistent error handling** — a final error middleware converts Mongoose, Multer, and thrown
    errors into uniform JSON responses, hiding internals in production.
-10. **Environment-driven config** — `.env` holds the DB URI, JWT secret, client origin, Cloudinary
-    credentials, optional DNS server, and Khalti secret.
+10. **Environment-driven config** — `.env` holds the DB URI, JWT secret, client origin, optional DNS
+    server, and the eSewa TEST credentials (product code, secret key).
+11. **Idempotent payment verification** — the eSewa verify endpoint atomically claims the order
+    (`findOneAndUpdate` on a `pending` order with `stockDeducted: false`) so duplicate or concurrent
+    callback verifications (e.g., React `<StrictMode>`'s double effect in development) can never
+    double-process a payment, double-deduct stock, or throw a Mongoose `VersionError`.
 
 ## 10. Running the Application
 
@@ -313,9 +325,9 @@ Prices, stock, and statuses are always decided on the server:
 ```bash
 cd backend
 npm install
-cp .env.example .env      # configure MONGO_URI, JWT_SECRET, CLIENT_URL
-npm run seed:categories   # optional: seed categories
-npm run seed:products     # optional: seed products
+cp .env.example .env      # configure MONGO_URI, JWT_SECRET, CLIENT_URL (+ ESEWA_SECRET_KEY)
+npm run seed:categories   # optional: seed the 6 categories
+npm run seed:products     # optional: seed 41 realistic products (Section 5.2)
 npm run dev               # http://localhost:5000
 ```
 
@@ -341,10 +353,20 @@ Testing was performed manually against the live API (PowerShell `Invoke-RestMeth
   owner-only edit; admin delete; average rating & count update after each operation.
 - **Orders (end-to-end):** login → add to cart → cart summary → checkout → place order →
   order-success → order history → order details.
-  Verified: subtotal/shipping/total computed server-side; stock decremented; cart cleared;
-  non-owner access → 403; invalid order status → 400; cancellation restores stock.
-- **Khalti (mock mode):** initiate returns a mock payment page; verify confirms the order, sets
-  payment status to `paid`, records a `MOCK-TRANSACTION-…` id, decrements stock, and clears the cart.
+  Verified: subtotal/shipping/total computed server-side (shipping = Rs. 0); stock decremented;
+  cart cleared; non-owner access → 403; invalid order status → 400; cancellation restores stock.
+- **eSewa (TEST/sandbox):** `initiate` returns the signed V2 form fields; the checkout submits a
+  hidden form and redirects to the real eSewa TEST payment page; paying with the official sandbox
+  customer ID (`9711111111`, password `Test@123`, OTP `123456`) returns to the success page.
+- **eSewa verification:** the callback `data` is decoded server-side, its HMAC signature is
+  re-computed and compared, `status = COMPLETE` is required, and the amount, product code, and order
+  ownership must match. The transparent status API
+  (`…/api/epay/transaction/status/`) is then queried server-to-server as an authoritative check.
+- **eSewa failure path:** cancelled/failed transactions land on the failure page with the reason
+  eSewa returned; the backend does not mark the order as paid.
+- **Concurrency-safety:** duplicating the verify request (React StrictMode double-effect) is handled
+  — only one request processes the order, the rest receive `Payment already verified`, and no
+  Mongoose VersionError or double stock deduction occurs.
 - **Admin module:** dashboard stats, order status updates, user role/status toggles, review
   deletion, product/category CRUD with validation errors.
 - **Frontend:** `npm run lint` and `npm run build` pass.
@@ -353,22 +375,23 @@ A full test report covering 52 test cases (customer, admin, edge, and probe case
 in the project `README.md`.
 
 [Screenshots: insert here — registration, product listing, product detail with reviews, cart,
-checkout, Khalti mock payment page, order success, order history, order detail, admin dashboard,
-admin products, admin orders]
+checkout with COD/eSewa options, eSewa TEST login page, eSewa payment success page, order success,
+order history, order detail, admin dashboard, admin products, admin orders]
 
 ## 12. Conclusion
 
 The project successfully implements a modern, full-stack e-commerce application. All core workflows
 — user registration and login, catalog browsing, cart and wishlist management, product reviews and
-ratings, Cash-on-Delivery **and** Khalti (mock) checkout, the recommendation feature, and order
+ratings, Cash-on-Delivery **and** eSewa (TEST) checkout, the recommendation feature, and order
 lifecycle management — function end to end. Security measures such as JWT authentication, role-based
-access, server-side price calculation, and inventory validation ensure that business-critical data
-cannot be tampered with from the client.
+access, server-side price calculation, HMAC-signed payment requests, and inventory validation ensure
+that business-critical data cannot be tampered with from the client.
 
 ## 13. Future Work
 
-- Integrate live Khalti in production (a real merchant secret key) and add **eSewa, bank transfer,
-  and iPIN-based card payments** (currently display labels only).
+- Activate **live eSewa production credentials** (eSewa provides them after successful TEST
+  transactions) and add **bank transfer and iPIN-based card payments** (currently display labels
+  only).
 - **Purchase-confirmation emails** and notifications on order status changes (not implemented yet —
   see Section 24).
 - **Web analytics** (e.g., Google Analytics 4) for visitor tracking (not implemented — see
@@ -387,8 +410,7 @@ cannot be tampered with from the client.
 5. Tailwind CSS Documentation — https://tailwindcss.com/docs
 6. JWT (JSON Web Tokens) — https://jwt.io/
 7. MongoDB Documentation — https://www.mongodb.com/docs/
-8. Cloudinary — https://cloudinary.com/documentation
-9. Khalti API Documentation — https://docs.khalti.com/
+8. eSewa Developer Documentation (including TEST credentials) — https://developer.esewa.com.np/
 
 ## 15. Frontend Architecture
 
@@ -428,7 +450,7 @@ The backend is an Express application. Its main files:
   3. `express.static('/uploads')` — serves uploaded avatar images.
   4. `requestLogger` — logs method, URL, status, and duration for each request.
   5. Route groups — `/api`, `/api/auth`, `/api/categories`, `/api/products`,
-     `/api/recommendations`, `/api/upload`, `/api/cart`, `/api/wishlist`, `/api/orders`,
+     `/api/recommendations`, `/api/cart`, `/api/wishlist`, `/api/orders`,
      `/api/payments`, `/api/admin`, plus `/sitemap.xml` and `/robots.txt`.
   6. `notFound` then `errorHandler` — the last two middlewares handle 404s and convert every error
      into a JSON response.
@@ -462,7 +484,7 @@ Browser → CORS/JSON/Logger → route → [protect] → [admin] → controller 
 | `products` | name, slug, price, discountPrice, images[], category, brand, stock, specifications, rating, reviewCount | Catalog |
 | `carts` | user (unique), items[{product, quantity, price}] | Shopping cart |
 | `wishlists` | user (unique), products[] | Saved items |
-| `orders` | user, items[] (snapshot), shippingAddress, subtotal, shippingCost, totalAmount, paymentMethod, paymentStatus, orderStatus, transactionId, stockDeducted | Orders & payments |
+| `orders` | user, items[] (snapshot), shippingAddress, subtotal, shippingCost, totalAmount, paymentMethod, paymentStatus, orderStatus, transactionId, esewaRefId, stockDeducted | Orders & payments |
 | `reviews` | user, product, rating, comment (unique user+product) | Ratings & feedback |
 
 Relationships are stored as **references** (ObjectIds). For example, a product holds a `category`
@@ -546,44 +568,74 @@ gallery, discount badge, specifications table, and the recommended/related lists
 ## 23. Checkout & Order Management
 
 - **Checkout page** collects fullName, phone, addressLine, city, district, zipCode, and a payment
-  method chosen from **COD** or **Khalti** (the `eSewa`/`bank` labels exist in display maps only).
-- **Server flow (`POST /api/orders`):**
-  1. Validates the shipping address and payment method (`cod` | `khalti`).
+  method chosen from **COD** or **eSewa** (bank transfer is shown as a "coming soon" label only).
+- **COD server flow (`POST /api/orders`):**
+  1. Validates the shipping address; only `cod` is accepted on this endpoint (eSewa orders are
+     created by `POST /api/payments/esewa/initiate` instead — see Section 24).
   2. Loads the user's cart; rejects an empty cart.
   3. Loads every product, validates quantities against stock, and builds order items using the
      effective price at that moment.
-  4. Computes `subtotal`, `shippingCost` (0 if ≥ Rs. 10,000 else Rs. 200), and `totalAmount`.
-  5. Creates the order with `paymentStatus: pending`, `orderStatus: pending`.
-  6. For **COD**: decrements stock immediately and clears the cart.
-  7. For **Khalti**: stock is decremented only when `verify` confirms the payment (Section 24),
-     then the cart is cleared.
+  4. Computes `subtotal`, `shippingCost` (always Rs. 0 — delivery is free), and `totalAmount`.
+  5. Creates the order with `paymentStatus: pending`, `orderStatus: pending`, and immediately
+     deducts stock and clears the cart for COD.
 - **Order history (`GET /api/orders`)** and a detail page show items, shipping address, payment
-  method/status, and a status badge. Non-owners can read an order only if they are admins (403
-  otherwise).
+  method/status, and a status badge (plus the eSewa `transactionId`/`esewaRefId`). Non-owners can
+  read an order only if they are admins (403 otherwise).
 - **Admin status updates (`PUT /api/orders/:id/status`)** accept any valid `orderStatus` or
   `paymentStatus`. Cancelling an order whose payment is still pending restores the stock (once,
   guarded by `stockDeducted`).
 
-## 24. Payment Gateway — Khalti (and Email Notifications)
+## 24. Payment Gateway — eSewa (ePay V2, TEST) and Email Notifications
 
-### Khalti integration
-- **Two modes, chosen automatically:**
-  - **Mock (development):** when `KHALTI_SECRET_KEY` is empty, `initiate` returns a fake `pidx`
-    (`MOCKPIDX-…`) and a payment URL on this app (`/payment/khalti/mock`). The mock page shows an
-    order summary and a "Pay" button; `verify` simulates a completed payment, stores a
-    `MOCK-TRANSACTION-…` transaction id, flags the order `isMockPayment: true`, confirms the order,
-    decrements stock, and clears the cart. This lets the whole checkout be tested without real
-    credentials.
-  - **Live:** with a real secret key, the backend calls Khalti's real API
-    (`https://khalti.com/api/v2/epayment/initiate/` and `/lookup/`, overridable with
-    `KHALTI_API_URL`) using `Authorization: Key <secret>`. Amounts are converted to paisa
-    (×100). The customer is redirected to Khalti's payment page and back to
-    `/payment/khalti/callback`.
-- **Protections in the code:** ownership checks (only the order owner may initiate/pay), an order
-  already paid cannot be paid again, a cancelled order cannot be paid, the lookup amount must equal
-  the order total, and a mock order cannot be verified once the app switches to live keys.
-- **Client pages:** `PaymentCallback` (handles the live-style return with `pidx` and `orderId`) and
-  `MockKhaltiPage` (development mock checkout) — both end on the shared `OrderSuccess` page.
+### eSewa integration
+The project integrates the official **eSewa ePay V2 (epay)** gateway and is tested against eSewa's
+**TEST/sandbox** environment (`rc.esewa.com.np`). There is no simulated mock mode — real sandbox
+requests are made with the official eSewa test merchant code.
+
+- **Configuration (`.env`):**
+  - `ESEWA_PRODUCT_CODE` — merchant/service code, `EPAYTEST` for the sandbox.
+  - `ESEWA_SECRET_KEY` — the test secret key from the eSewa merchant portal.
+  - `ESEWA_PAYMENT_URL` — `https://rc-epay.esewa.com.np/api/epay/main/v2/form`.
+  - `CLIENT_URL` — used to build the `success_url` / `failure_url` returned to eSewa.
+- **Initiating a payment (`POST /api/payments/esewa/initiate`):**
+  1. Validates the shipping address and the logged-in user's cart; rejects an empty cart.
+  2. Re-prices every item from the database, enforces `quantity ≤ stock`, and computes `subtotal`,
+     `shippingCost` (Rs. 0) and `totalAmount` server-side.
+  3. Creates the **pending** order (payment method `esewa`) and generates a unique
+     `transaction_uuid`.
+  4. Builds the ePay V2 form fields: `amount`, `tax_amount`, `product_service_charge`,
+     `product_delivery_charge`, `product_code`, `total_amount`, `transaction_uuid`, `success_url`,
+     `failure_url`, `signed_field_names`, and `signature`.
+  5. The signature is an **HMAC-SHA256** digest (base64) over the signed fields joined as
+     `total_amount=<…>,transaction_uuid=<…>,product_code=<…>` — exactly the key=value order declared
+     in `signed_field_names`.
+  6. The frontend posts these fields as a **hidden HTML form** to `ESEWA_PAYMENT_URL`, leaving the
+     site; the customer signs in with an eSewa TEST account and completes the payment.
+- **Verifying a payment (`POST /api/payments/esewa/verify`):**
+  eSewa redirects to `/payment/esewa/success` (or `/failure`) with a base64-encoded `data` JSON.
+  The backend:
+  1. Decodes the payload and looks up the order by `transaction_uuid` (scoped to the current user).
+  2. Re-computes and compares the returned **HMAC signature**.
+  3. Requires `status = COMPLETE`, the matching `total_amount`, the matching `product_code`, and an
+     existing pending order.
+  4. Performs an authoritative **server-to-server status query**
+     (`GET https://rc.esewa.com.np/api/epay/transaction/status/?product_code=…&total_amount=…&transaction_uuid=…`)
+     and only proceeds when it also reports `COMPLETE`.
+  5. **Atomically claims** the order with `findOneAndUpdate` conditioned on
+     `paymentStatus: 'pending'` and `stockDeducted: false`, so a duplicate or concurrent callback
+     (e.g., React `<StrictMode>`'s double effect in development) can never double-process it. The
+     losing request simply receives `Payment already verified`.
+  6. Decrements stock **exactly once** (guarded `$inc` per item), sets `stockDeducted`, stores
+     eSewa's `transaction_code` in `esewaRefId`, clears the cart (best-effort), and confirms the
+     order.
+- **Failure handling:** a cancelled/failed payment redirects to `/payment/esewa/failure`, which
+  decodes the payload and shows the reason eSewa returned, plus any `message` — the order stays
+  un-confirmed and unpaid. eSewa automatically refunds failed transactions.
+- **TEST credentials (official eSewa sandbox):** eSewa ID `9711111111` / `9711111112` /
+  `9711111113`, password `Test@123`, MPIN `1122`, OTP/token `123456`.
+- **Protections in the code:** ownership checks, one transaction per generated `transaction_uuid`,
+  amount + product-code equality, response-signature verification, an authoritative server-side
+  status check, and an atomic claim that prevents double stock deduction.
 
 ### Purchase confirmation email — NOT IMPLEMENTED
 No email library (nodemailer/SMTP/SendGrid/Mailgun/Resend) is installed and no email is sent by the
@@ -638,8 +690,7 @@ best-sellers list.
 - **Products (`/admin/products`, `/admin/products/create`, `/admin/products/edit/:id`):**
   - Create from a form (name, brand, description, price, discountPrice, stock, category,
     specifications map) with server-side validation.
-  - Image upload via Cloudinary when configured (multipart form, up to 6 files) or by pasting image
-    URLs when uploads are unavailable (Section 35).
+  - Product images are set as image URLs (up to 6) pasted into the form (Section 35).
   - Inline stock editing and deletion from the products list, with toast feedback.
 - **Categories (`/admin/categories`):** list with product counts, create/edit modal, and delete. A
   category containing products cannot be deleted (HTTP 400) — this was a fix for a found bug
@@ -703,11 +754,14 @@ best-sellers list.
 - `GET /orders` → `{ orders }` · `GET /orders/:id` (owner/admin)
 - `PUT /orders/:id/status` (admin) — body `{ orderStatus?, paymentStatus? }`
 
-**Payments** — user
+**Payments (eSewa)** — user
 
-- `POST /payments/khalti/initiate` `{ orderId }` → `{ mode, pidx, payment_url, amount }`
-- `POST /payments/khalti/verify` `{ pidx }` → confirms order, decrements stock, returns
-  `{ transactionId, isMock, order }`
+- `POST /payments/esewa/initiate` `{ shippingAddress }` → validates the cart, creates the pending
+  eSewa order, returns `{ orderId, transactionUuid, paymentUrl, paymentData }` where `paymentData`
+  holds the signed V2 form fields.
+- `POST /payments/esewa/verify` `{ data }` → decodes the callback `data`, verifies the signature and
+  the server-to-server status, then atomically claims and confirms the order
+  (`{ success, message, order }`).
 
 **Admin** — admin only
 
@@ -717,9 +771,6 @@ best-sellers list.
 **SEO** — public, at the server root (no `/api` prefix)
 
 - `GET /sitemap.xml` · `GET /robots.txt`
-
-**Upload** — `POST /api/upload` (admin, multipart `images[]`, max 6 × 5 MB);
-`GET /api/upload/config` → `{ cloudinaryConfigured }`
 
 ## 30. React Pages & Routes
 
@@ -739,8 +790,8 @@ All routes are rendered inside `MainLayout`. `ProtectedRoute` redirects guests t
 | `/wishlist` | Wishlist | user |
 | `/checkout` | Checkout | user |
 | `/order-success` | OrderSuccess | user |
-| `/payment/khalti/callback` | PaymentCallback | user |
-| `/payment/khalti/mock` | MockKhaltiPage | user |
+| `/payment/esewa/success` | EsewaSuccess | user |
+| `/payment/esewa/failure` | EsewaFailure | public |
 | `/orders` | Orders | user |
 | `/orders/:id` | OrderDetails | user |
 | `/account` | Account | user |
@@ -813,7 +864,7 @@ store visitor statistics. Adding analytics later would mean a small `<script>` s
 | Client-side guards | `ProtectedRoute` and `AdminRoute` hide pages, but the server is always the real gatekeeper |
 | CORS | Only the configured `CLIENT_URL` origin is allowed |
 | Price integrity | Order totals computed server-side from DB products; cart item price set server-side |
-| Inventory | Stock conditions enforced with atomic `$inc` queries; rollback if a paid order cannot be fulfilled |
+| Inventory | Stock deducted with atomic guarded `$inc` queries — COD at placement, eSewa only after server-side payment confirmation; cancelled pending orders restore stock once |
 | Ownership | Order payment/verification and review edits require the owner (or admin) — 403 otherwise |
 | Input validation | Mongoose validation (lengths, enums, regex patterns, min/max) plus explicit controller checks |
 | Error safety | Central error middleware hides stack traces in production and sanitizes messages |
@@ -823,19 +874,12 @@ store visitor statistics. Adding analytics later would mean a small `<script>` s
 
 ## 35. Image Handling & Uploads
 
-- **Middleware (`uploadMiddleware.js`)** reads files into memory with Multer; only
-  `jpeg/png/webp/gif` are accepted and size is capped at **5 MB per file** (6 files for product
-  images). A custom file filter rejects executable/script extensions.
-- **Product images** — `POST /api/upload` (admin) sends the files to **Cloudinary** when the
-  `CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET` variables are configured (folder
-  `1shopnepal/products`, transformed to 1200 px, quality auto). If Cloudinary is **not** configured,
-  the endpoint returns 503 with a helpful message and the admin product form falls back to **pasting
-  image URLs**. `GET /api/upload/config` tells the form whether uploads are enabled
-  (`{ cloudinaryConfigured: true|false }`).
-- **Profile images** — uploaded with multipart to `/api/auth/profile-image` and saved locally under
-  `backend/uploads/avatars`, served by the static `/uploads` route.
-- **Hosting of uploaded media** is offloaded to Cloudinary so the Node backend does not need to store
-  large product images locally.
+- **Product images** — stored as **image URLs** (a MongoDB string array on the product); there is no
+  file-storage service. The admin product form accepts up to 6 pasted image URLs (Section 27).
+- **Profile images** — uploaded with Multer to `/api/auth/profile-image` (multipart) and saved
+  locally under `backend/uploads/avatars`, served by the static `/uploads` route. The upload
+  middleware validates MIME types (`jpeg/png/webp/gif`), caps file size at 5 MB, and rejects
+  dangerous file extensions.
 
 ## 36. Environment Variables
 
@@ -848,27 +892,21 @@ MONGO_URI=mongodb://localhost:27017/1shopnepal
 JWT_SECRET=your-super-secret-jwt-key
 CLIENT_URL=http://localhost:5173
 
-# Cloudinary (product image uploads). Leave blank to disable uploads and use image URLs instead.
-CLOUDINARY_CLOUD_NAME=
-CLOUDINARY_API_KEY=
-CLOUDINARY_API_SECRET=
+# eSewa ePay V2 (TEST environment) — use the official test merchant credentials
+ESEWA_PRODUCT_CODE=EPAYTEST
+ESEWA_SECRET_KEY=
+ESEWA_PAYMENT_URL=https://rc-epay.esewa.com.np/api/epay/main/v2/form
 
 # Optional: needed only if Node cannot resolve MongoDB Atlas (mongodb+srv) hostnames,
 # e.g. DNS_SERVER=192.168.0.1,8.8.8.8
 DNS_SERVER=
-
-# Khalti payment gateway
-#   Empty KHALTI_SECRET_KEY  -> mock/development mode (simulated checkout)
-#   Real secret key          -> live Khalti e-payment (test keys hit the Khalti sandbox)
-KHALTI_SECRET_KEY=
-KHALTI_API_URL=https://khalti.com
 ```
 
 Important notes:
 
 - `MONGO_URI` and `JWT_SECRET` are **required**. `CLIENT_URL` must match the frontend origin (the
   backend uses it for CORS and for building return/payment URLs).
-- Leaving `CLOUDINARY_*` blank disables product-image uploads (the admin form then accepts URLs).
-- Leaving `KHALTI_SECRET_KEY` blank turns on the **mock payment mode** — perfect for development and
-  for this lab; a real key is only needed for production.
+- `ESEWA_SECRET_KEY` and `ESEWA_PRODUCT_CODE` must be filled with the eSewa TEST merchant values
+  (`EPAYTEST`) for the eSewa checkout to work; `CLIENT_URL` is also used to build the eSewa
+  success/failure URLs.
 - `DNS_SERVER` is an optional workaround for unreliable Atlas hostname resolution.

@@ -48,8 +48,8 @@ const corpus = [
       <>
         <p>
           All sensitive data is transmitted over secured connections and we never store your full
-          card details. Payment information is handled by trusted payment processors such as eSewa
-          and Khalti.
+          card details. Payment is collected in cash on delivery, so no online payment information is
+          handled or stored.
         </p>
       </>
     ),

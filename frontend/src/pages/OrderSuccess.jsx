@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { CheckCircle2, Package, Banknote, Wallet, Loader2, AlertTriangle } from 'lucide-react'
+import { CheckCircle2, Package, Banknote, Loader2 } from 'lucide-react'
 import Seo from '../components/common/Seo'
 import { orderApi } from '../services/api'
 import StatusBadge from '../components/orders/StatusBadge'
@@ -9,8 +9,6 @@ import StatusBadge from '../components/orders/StatusBadge'
 const PAYMENT_METHOD_LABELS = {
   cod: 'Cash on Delivery',
   esewa: 'eSewa',
-  khalti: 'Khalti',
-  bank: 'Bank Transfer',
 }
 
 function OrderSuccess() {
@@ -123,47 +121,19 @@ function OrderSuccess() {
             </div>
           </div>
 
-          {order.paymentMethod === 'khalti' ? (
-            <div className="mt-4 p-4 bg-gray-50 rounded-xl">
-              <div className="flex items-center gap-3">
-                <Wallet className="w-5 h-5 text-[#5C2D91] shrink-0" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">
-                    Paid via Khalti
-                    <span className="ml-2 text-xs font-semibold text-green-700 bg-green-100 rounded px-2 py-0.5 uppercase tracking-wide">
-                      Paid
-                    </span>
-                  </p>
-                  {order.transactionId ? (
-                    <p className="text-xs text-gray-500">
-                      Transaction ID: <span className="font-mono">{order.transactionId}</span>
-                    </p>
-                  ) : null}
-                </div>
-              </div>
-              {order.isMockPayment && (
-                <div className="mt-3 flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                  <p className="text-xs text-amber-800">
-                    This payment was completed in <strong>development sandbox mode</strong> via the
-                    mock Khalti gateway. No real money was charged.
-                  </p>
-                </div>
-              )}
+          <div className="mt-4 flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+            <Banknote className="w-5 h-5 text-orange-600" />
+            <div>
+              <p className="text-sm font-medium text-gray-900">
+                {PAYMENT_METHOD_LABELS[order.paymentMethod] || order.paymentMethod}
+              </p>
+              <p className="text-xs text-gray-500">
+                {order.paymentMethod === 'cod'
+                  ? `Please keep Rs. ${order.totalAmount.toLocaleString()} ready when the order arrives.`
+                  : 'Payment completed online. Your order will be processed shortly.'}
+              </p>
             </div>
-          ) : (
-            <div className="mt-4 flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-              <Banknote className="w-5 h-5 text-orange-600" />
-              <div>
-                <p className="text-sm font-medium text-gray-900">
-                  {PAYMENT_METHOD_LABELS[order.paymentMethod] || order.paymentMethod}
-                </p>
-                <p className="text-xs text-gray-500">
-                  Please keep Rs. {order.totalAmount.toLocaleString()} ready when the order arrives.
-                </p>
-              </div>
-            </div>
-          )}
+          </div>
         </div>
       ) : (
         <div className="mt-10 text-center text-gray-500">

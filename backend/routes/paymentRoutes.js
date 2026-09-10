@@ -2,11 +2,11 @@ const express = require('express')
 const router = express.Router()
 const { protect } = require('../middleware/authMiddleware')
 const {
-  initiateKhaltiPayment,
-  verifyKhaltiPayment,
+  initiateEsewaPayment,
+  verifyEsewaPayment,
 } = require('../controllers/paymentController')
 
-router.post('/khalti/initiate', protect, initiateKhaltiPayment)
-router.post('/khalti/verify', protect, verifyKhaltiPayment)
+router.post('/esewa/initiate', protect, initiateEsewaPayment)
+router.post('/esewa/verify', protect, verifyEsewaPayment)
 
 module.exports = router

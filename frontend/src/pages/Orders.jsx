@@ -8,8 +8,6 @@ import StatusBadge from '../components/orders/StatusBadge'
 const PAYMENT_METHOD_LABELS = {
   cod: 'Cash on Delivery',
   esewa: 'eSewa',
-  khalti: 'Khalti',
-  bank: 'Bank Transfer',
 }
 
 function Orders() {

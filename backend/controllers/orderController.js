@@ -4,8 +4,8 @@ const Product = require('../models/Product')
 const asyncHandler = require('../utils/asyncHandler')
 
 const SHIPPING_THRESHOLD = 10000
-const SHIPPING_COST = 200
-const ALLOWED_PAYMENT_METHODS = ['cod', 'khalti']
+const SHIPPING_COST = 0
+const ALLOWED_PAYMENT_METHODS = ['cod']
 
 const getEffectivePrice = (product) => {
   if (product.discountPrice != null && product.discountPrice < product.price) {

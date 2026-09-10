@@ -4,8 +4,6 @@ const asyncHandler = require('../utils/asyncHandler')
 const path = require('path')
 const fs = require('fs')
 const crypto = require('crypto')
-const { configureCloudinary } = require('../config/cloudinary')
-const { uploadImageToCloudinary } = require('./uploadController')
 
 const AVATAR_DIR = path.join(__dirname, '..', 'uploads', 'avatars')
 
@@ -170,29 +168,8 @@ const uploadProfileImage = asyncHandler(async (req, res) => {
     throw new Error('No image file was uploaded')
   }
 
-  let imageUrl
-
-  const cloudinary = configureCloudinary()
-  if (cloudinary) {
-    try {
-      const uploaded = await uploadImageToCloudinary(
-        cloudinary,
-        file.buffer,
-        file.originalname,
-        {
-          prefix: 'avatars',
-          transformation: [{ width: 512, crop: 'limit', quality: 'auto' }],
-        }
-      )
-      imageUrl = uploaded.url
-    } catch (error) {
-      res.status(500)
-      throw new Error(`Failed to upload profile picture: ${error.message}`)
-    }
-  } else {
-    const relativePath = saveAvatarLocally(file.buffer, file.originalname)
-    imageUrl = `${req.protocol}://${req.get('host')}${relativePath}`
-  }
+  const relativePath = saveAvatarLocally(file.buffer, file.originalname)
+  const imageUrl = `${req.protocol}://${req.get('host')}${relativePath}`
 
   const user = await User.findById(req.user._id)
   if (!user) {

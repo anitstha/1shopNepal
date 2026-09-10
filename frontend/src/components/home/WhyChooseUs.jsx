@@ -13,8 +13,8 @@ const features = [
   {
     icon: ShieldCheck,
     title: 'Secure Payments',
-    desc: 'Pay safely with cash on delivery, eSewa, Khalti or direct bank transfer. Your money and data are always protected.',
-    points: ['Cash on delivery', 'eSewa & Khalti wallets', 'Visa, Mastercard & bank transfer'],
+    desc: 'Pay safely with cash on delivery when your order reaches your doorstep.',
+    points: ['Cash on delivery', 'No advance payment needed', 'Easy 7-day returns'],
   },
   {
     icon: Truck,

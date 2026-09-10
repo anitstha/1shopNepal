@@ -75,7 +75,6 @@ export function CartProvider({ children }) {
   const updateItem = useCallback(async (productId, quantity) => {
     const data = await cartApi.updateItem(productId, quantity)
     if (data.cart) handleCartPayload(data.cart)
-    toast.success('Cart updated')
     return data
   }, [])
 

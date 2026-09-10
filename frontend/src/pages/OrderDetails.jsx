@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { Package, MapPin, Banknote, Wallet, Loader2, ArrowLeft, Truck, AlertTriangle } from 'lucide-react'
+import { Package, MapPin, Banknote, Loader2, ArrowLeft, Truck } from 'lucide-react'
 import Seo from '../components/common/Seo'
 import { orderApi } from '../services/api'
 import StatusBadge from '../components/orders/StatusBadge'
@@ -8,8 +8,6 @@ import StatusBadge from '../components/orders/StatusBadge'
 const PAYMENT_METHOD_LABELS = {
   cod: 'Cash on Delivery',
   esewa: 'eSewa',
-  khalti: 'Khalti',
-  bank: 'Bank Transfer',
 }
 
 function OrderDetails() {
@@ -177,34 +175,13 @@ function OrderDetails() {
               <h2 className="text-lg font-bold text-gray-900">Payment</h2>
             </div>
             <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
-              {order.paymentMethod === 'khalti' ? (
-                <Wallet className="w-4 h-4 text-[#5C2D91]" />
-              ) : (
-                <Banknote className="w-4 h-4 text-gray-500" />
-              )}
+              <Banknote className="w-4 h-4 text-gray-500" />
               {PAYMENT_METHOD_LABELS[order.paymentMethod] || order.paymentMethod}
-              {order.isMockPayment && (
-                <span className="text-[10px] font-semibold text-amber-700 bg-amber-100 rounded px-2 py-0.5 uppercase tracking-wide">
-                  Sandbox
-                </span>
-              )}
             </div>
-            {order.transactionId && (
+            {(order.transactionId || order.esewaRefId) && (
               <p className="mt-1.5 text-xs text-gray-500">
-                Transaction ID: <span className="font-mono">{order.transactionId}</span>
-                {order.isMockPayment && (
-                  <span> (mock)</span>
-                )}
+                Transaction ID: <span className="font-mono">{order.esewaRefId || order.transactionId}</span>
               </p>
-            )}
-            {order.isMockPayment && (
-              <div className="mt-3 flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                <p className="text-xs text-amber-800">
-                  Paid through the <strong>development sandbox</strong> mock Khalti gateway. No real
-                  money was charged.
-                </p>
-              </div>
             )}
             <div className="mt-3 flex items-center justify-between text-sm">
               <span className="text-gray-500">Payment Status</span>

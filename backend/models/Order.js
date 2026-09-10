@@ -93,7 +93,7 @@ const orderSchema = new mongoose.Schema(
     paymentMethod: {
       type: String,
       enum: {
-        values: ['cod', 'esewa', 'khalti', 'bank'],
+        values: ['cod', 'esewa'],
         message: 'Invalid payment method',
       },
       required: [true, 'Payment method is required'],
@@ -108,20 +108,11 @@ const orderSchema = new mongoose.Schema(
     },
     transactionId: {
       type: String,
-      trim: true,
+      default: null,
     },
-    pidx: {
+    esewaRefId: {
       type: String,
-      trim: true,
-      index: { unique: true, sparse: true },
-    },
-    paymentUrl: {
-      type: String,
-      trim: true,
-    },
-    isMockPayment: {
-      type: Boolean,
-      default: false,
+      default: null,
     },
     stockDeducted: {
       type: Boolean,

@@ -1,14 +1,14 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { ShoppingCart, Loader2, Banknote, Lock, Wallet, ExternalLink } from 'lucide-react'
+import { ShoppingCart, Loader2, Banknote, Wallet, Lock } from 'lucide-react'
 import Seo from '../components/common/Seo'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import { orderApi, paymentApi } from '../services/api'
 
 const SHIPPING_THRESHOLD = 10000
-const SHIPPING_COST = 200
+const SHIPPING_COST = 0
 
 const PAYMENT_METHODS = [
   {
@@ -18,12 +18,30 @@ const PAYMENT_METHODS = [
     icon: Banknote,
   },
   {
-    value: 'khalti',
-    label: 'Khalti',
-    desc: 'Pay securely online via Khalti wallet',
+    value: 'esewa',
+    label: 'eSewa',
+    desc: 'Pay securely online with your eSewa wallet',
     icon: Wallet,
   },
 ]
+
+const submitEsewaForm = (data) => {
+  const form = document.createElement('form')
+  form.method = 'POST'
+  form.action = data.paymentUrl
+  form.target = '_self'
+
+  Object.entries(data.paymentData || {}).forEach(([key, value]) => {
+    const input = document.createElement('input')
+    input.type = 'hidden'
+    input.name = key
+    input.value = value
+    form.appendChild(input)
+  })
+
+  document.body.appendChild(form)
+  form.submit()
+}
 
 function Checkout() {
   const navigate = useNavigate()
@@ -64,44 +82,32 @@ function Checkout() {
       return
     }
 
+    const shippingAddress = {
+      fullName: form.fullName.trim(),
+      phone: form.phone.trim(),
+      addressLine: form.addressLine.trim(),
+      city: form.city.trim(),
+      district: form.district.trim(),
+      zipCode: form.zipCode.trim(),
+    }
+
     setError('')
     try {
-      if (paymentMethod === 'cod') {
-        setPhase('creating')
-        const data = await orderApi.createOrder({
-          shippingAddress: {
-            fullName: form.fullName.trim(),
-            phone: form.phone.trim(),
-            addressLine: form.addressLine.trim(),
-            city: form.city.trim(),
-            district: form.district.trim(),
-            zipCode: form.zipCode.trim(),
-          },
-          paymentMethod: 'cod',
-        })
-        await clearCart()
-        navigate('/order-success', { state: { orderId: data.order._id, paymentMethod: 'cod' } })
+      if (paymentMethod === 'esewa') {
+        setPhase('redirecting')
+        const data = await paymentApi.initiateEsewa({ shippingAddress })
+        toast.success('Redirecting to eSewa to complete your payment...')
+        submitEsewaForm(data)
         return
       }
 
       setPhase('creating')
       const data = await orderApi.createOrder({
-        shippingAddress: {
-          fullName: form.fullName.trim(),
-          phone: form.phone.trim(),
-          addressLine: form.addressLine.trim(),
-          city: form.city.trim(),
-          district: form.district.trim(),
-          zipCode: form.zipCode.trim(),
-        },
-        paymentMethod: 'khalti',
+        shippingAddress,
+        paymentMethod: 'cod',
       })
-
-      setPhase('initiating')
-      const initiated = await paymentApi.initiateKhalti(data.order._id)
-
-      setPhase('redirecting')
-      window.location.assign(initiated.payment_url)
+      await clearCart()
+      navigate('/order-success', { state: { orderId: data.order._id, paymentMethod: 'cod' } })
     } catch (err) {
       setError(err.message)
       toast.error(err.message)
@@ -156,7 +162,7 @@ function Checkout() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <Seo title="Checkout | 1Shop Nepal" description="Complete your order at 1Shop Nepal with Cash on Delivery or Khalti." canonical="/checkout" noindex />
+      <Seo title="Checkout | 1Shop Nepal" description="Complete your order at 1Shop Nepal with Cash on Delivery." canonical="/checkout" noindex />
       <nav className="text-sm text-gray-500 mb-6">
         <Link to="/cart" className="hover:text-orange-600">Cart</Link>
         <span className="mx-2">/</span>
@@ -291,8 +297,7 @@ function Checkout() {
               })}
             </div>
             <p className="mt-3 flex items-center gap-1.5 text-xs text-gray-400">
-              <Lock className="w-3.5 h-3.5" /> eSewa, bank transfer coming soon. Khalti payments are
-              verified securely on our server.
+              <Lock className="w-3.5 h-3.5" /> Bank transfer coming soon. You can pay on delivery or with eSewa.
             </p>
           </div>
         </div>
@@ -361,26 +366,18 @@ function Checkout() {
               {placing ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  {phase === 'initiating'
-                    ? 'Initiating Khalti payment...'
-                    : phase === 'redirecting'
-                      ? 'Redirecting to Khalti...'
-                      : 'Placing Order...'}
+                  {phase === 'redirecting' ? 'Redirecting to eSewa...' : 'Placing Order...'}
                 </>
+              ) : paymentMethod === 'esewa' ? (
+                'Pay with eSewa'
               ) : (
                 'Place Order'
               )}
             </button>
             <p className="mt-3 text-center text-xs text-gray-400">
-              {paymentMethod === 'cod' ? (
-                'By placing your order you agree to pay the total amount at delivery.'
-              ) : (
-                <>
-                  You will be redirected to Khalti to complete payment of{' '}
-                  <span className="font-medium text-gray-500">Rs. {grandTotal.toLocaleString()}</span>
-                  <ExternalLink className="inline w-3 h-3 ml-0.5" />
-                </>
-              )}
+              {paymentMethod === 'esewa'
+                ? 'You will be redirected to eSewa to complete your payment securely.'
+                : 'By placing your order you agree to pay the total amount at delivery.'}
             </p>
           </div>
         </div>

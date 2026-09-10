@@ -6,7 +6,7 @@ import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 
 const SHIPPING_THRESHOLD = 10000
-const SHIPPING_COST = 200
+const SHIPPING_COST = 0
 
 function Cart() {
   const { items, subtotal, itemCount, loading, updateItem, removeItem, clearCart } =
