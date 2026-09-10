@@ -26,8 +26,8 @@ function FeaturedProducts() {
   }, [])
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <SectionHeader title="Featured Products" subtitle="Hand-picked deals just for you" linkTo="/products" />
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <SectionHeader eyebrow="Featured" title="Featured Products" subtitle="Hand-picked deals just for you" linkTo="/products" />
       {loading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
           {Array.from({ length: 4 }).map((_, i) => (

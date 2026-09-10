@@ -52,17 +52,21 @@ function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-200 shadow-sm">
+    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-neutral-200">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-4 h-16">
           {/* Logo */}
           <Link
             to="/"
             onClick={closeAll}
-            className="flex items-center gap-2 shrink-0"
+            className="flex items-center gap-2.5 shrink-0"
           >
             <span className="flex items-center justify-center w-9 h-9">
               <img src={logo} alt="" />
+            </span>
+            <span className="hidden sm:flex items-baseline gap-1 text-lg font-bold text-neutral-900 tracking-tight">
+              1Shop
+              <span className="font-medium text-neutral-500">Nepal</span>
             </span>
           </Link>
 
@@ -78,22 +82,22 @@ function Navbar() {
                 >
                   <Link
                     to="/products"
-                    className="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 hover:text-orange-600"
+                    className="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-neutral-700 hover:text-neutral-900"
                   >
                     Categories
                     <ChevronDown className="w-4 h-4" />
                   </Link>
                   {catOpen && (
-                    <div className="absolute left-0 mt-1 w-56 bg-white rounded-xl border border-gray-200 shadow-lg py-2">
+                    <div className="absolute left-0 mt-1 w-56 bg-white rounded-xl border border-neutral-200 shadow-xl shadow-neutral-900/5 py-2">
                       {categories.map((cat) => (
                         <Link
                           key={cat._id}
                           to={`/categories/${cat.slug}`}
                           onClick={closeAll}
-                          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+                          className="flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900"
                         >
-                          <span className="relative w-8 h-8 rounded-md overflow-hidden flex-shrink-0 bg-orange-100">
-                            <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-orange-600">
+                          <span className="relative w-8 h-8 rounded-md overflow-hidden flex-shrink-0 bg-neutral-100">
+                            <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-neutral-600">
                               {cat.name.charAt(0)}
                             </span>
                             <img
@@ -119,8 +123,8 @@ function Navbar() {
                   className={({ isActive }) =>
                     `px-3 py-2 text-sm font-medium transition-colors ${
                       isActive
-                        ? "text-orange-600"
-                        : "text-gray-700 hover:text-orange-600"
+                        ? "text-neutral-900"
+                        : "text-neutral-700 hover:text-neutral-900"
                     }`
                   }
                 >
@@ -138,9 +142,9 @@ function Navbar() {
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 placeholder="Search products..."
-                className="w-full px-4 py-2 pl-10 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+                className="w-full px-4 py-2 pl-10 rounded-full bg-neutral-100 border border-transparent focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent text-sm placeholder-neutral-400"
               />
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
             </form>
           </div>
 
@@ -148,19 +152,19 @@ function Navbar() {
           <div className="hidden md:flex items-center ml-4 space-x-1">
             <Link
               to="/wishlist"
-              className="p-2 text-gray-700 hover:text-orange-600 transition-colors"
+              className="p-2 text-neutral-700 hover:text-neutral-900 transition-colors"
               aria-label="Wishlist"
             >
               <Heart className="w-6 h-6" />
             </Link>
             <Link
               to="/cart"
-              className="relative p-2 text-gray-700 hover:text-orange-600 transition-colors"
+              className="relative p-2 text-neutral-700 hover:text-neutral-900 transition-colors"
               aria-label="Cart"
             >
               <ShoppingCart className="w-6 h-6" />
               {itemCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-orange-600 text-white text-[10px] font-bold">
+                <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-neutral-900 text-white text-[10px] font-bold">
                   {itemCount > 99 ? "99+" : itemCount}
                 </span>
               )}
@@ -175,26 +179,26 @@ function Navbar() {
                 onMouseEnter={() => setUserOpen(true)}
                 onMouseLeave={() => setUserOpen(false)}
               >
-                <button className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-gray-700 hover:text-orange-600 transition-colors">
-                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-600 text-white font-bold text-sm">
+                <button className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-neutral-700 hover:text-neutral-900 transition-colors">
+                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-neutral-900 text-white font-bold text-sm">
                     {user.name.charAt(0).toUpperCase()}
                   </span>
                   {user.name.split(" ")[0]}
                   <ChevronDown className="w-4 h-4" />
                 </button>
                 {userOpen && (
-                  <div className="absolute right-0 mt-1 w-48 bg-white rounded-xl border border-gray-200 shadow-lg py-2">
+                  <div className="absolute right-0 mt-1 w-48 bg-white rounded-xl border border-neutral-200 shadow-xl shadow-neutral-900/5 py-2">
                     <Link
                       to="/account"
                       onClick={closeAll}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+                      className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900"
                     >
                       My Account
                     </Link>
                     <Link
                       to="/orders"
                       onClick={closeAll}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+                      className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900"
                     >
                       My Orders
                     </Link>
@@ -203,7 +207,7 @@ function Navbar() {
                         <Link
                           to="/admin"
                           onClick={closeAll}
-                          className="block px-4 py-2 text-sm font-semibold text-orange-600 hover:bg-orange-50"
+                          className="block px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-50"
                         >
                           Admin Dashboard
                         </Link>
@@ -219,7 +223,7 @@ function Navbar() {
                               key={l.to}
                               to={l.to}
                               onClick={closeAll}
-                              className="block pl-8 pr-4 py-1.5 text-sm text-gray-500 hover:bg-orange-50 hover:text-orange-600"
+                              className="block pl-8 pr-4 py-1.5 text-sm text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900"
                             >
                               {l.label}
                             </Link>
@@ -243,7 +247,7 @@ function Navbar() {
             ) : (
               <Link
                 to="/login"
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-orange-600 hover:bg-orange-700 rounded-full transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-neutral-900 hover:bg-black rounded-full transition-colors"
               >
                 <User className="w-4 h-4" />
                 Sign In
@@ -255,12 +259,12 @@ function Navbar() {
           <div className="md:hidden ml-auto flex items-center space-x-1">
             <Link
               to="/cart"
-              className="relative p-2 text-gray-700"
+              className="relative p-2 text-neutral-700"
               aria-label="Cart"
             >
               <ShoppingCart className="w-6 h-6" />
               {itemCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-orange-600 text-white text-[10px] font-bold">
+                <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-neutral-900 text-white text-[10px] font-bold">
                   {itemCount > 99 ? "99+" : itemCount}
                 </span>
               )}
@@ -270,7 +274,7 @@ function Navbar() {
                 setMenuOpen((open) => !open);
                 setCatOpen(false);
               }}
-              className="p-2 text-gray-700"
+              className="p-2 text-neutral-700"
               aria-label="Toggle menu"
               aria-expanded={menuOpen}
             >
@@ -291,15 +295,15 @@ function Navbar() {
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Search products..."
-              className="w-full px-4 py-2 pl-10 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+              className="w-full px-4 py-2 pl-10 rounded-full bg-neutral-100 border border-transparent focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent text-sm placeholder-neutral-400"
             />
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
           </form>
         </div>
 
         {/* Mobile menu */}
         {menuOpen && (
-          <div className="md:hidden pb-4 border-t border-gray-100 pt-2 space-y-1">
+          <div className="md:hidden pb-4 border-t border-neutral-100 pt-2 space-y-1">
             {navLinks.map((link) => (
               <NavLink
                 key={link.to}
@@ -309,8 +313,8 @@ function Navbar() {
                 className={({ isActive }) =>
                   `block px-3 py-2 rounded-md text-sm font-medium ${
                     isActive
-                      ? "text-orange-600 bg-orange-50"
-                      : "text-gray-700 hover:bg-gray-100"
+                      ? "text-neutral-900 bg-neutral-100"
+                      : "text-neutral-700 hover:bg-neutral-100"
                   }`
                 }
               >
@@ -320,23 +324,23 @@ function Navbar() {
             <Link
               to="/wishlist"
               onClick={closeAll}
-              className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100"
+              className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-neutral-700 hover:bg-neutral-100"
             >
               <Heart className="w-4 h-4" /> Wishlist
             </Link>
             {isAuthenticated ? (
-              <div className="pt-2 space-y-1 border-t border-gray-100">
+              <div className="pt-2 space-y-1 border-t border-neutral-100">
                 <Link
                   to="/account"
                   onClick={closeAll}
-                  className="block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100"
+                  className="block px-3 py-2 rounded-md text-sm font-medium text-neutral-700 hover:bg-neutral-100"
                 >
                   My Account
                 </Link>
                 <Link
                   to="/orders"
                   onClick={closeAll}
-                  className="block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100"
+                  className="block px-3 py-2 rounded-md text-sm font-medium text-neutral-700 hover:bg-neutral-100"
                 >
                   My Orders
                 </Link>
@@ -345,7 +349,7 @@ function Navbar() {
                     <Link
                       to="/admin"
                       onClick={closeAll}
-                      className="block px-3 py-2 rounded-md text-sm font-semibold text-orange-600 hover:bg-gray-100"
+                      className="block px-3 py-2 rounded-md text-sm font-semibold text-neutral-900 hover:bg-neutral-100"
                     >
                       Admin Dashboard
                     </Link>
@@ -360,7 +364,7 @@ function Navbar() {
                         key={l.to}
                         to={l.to}
                         onClick={closeAll}
-                        className="block pl-8 pr-3 py-1.5 rounded-md text-sm text-gray-500 hover:bg-gray-100"
+                        className="block pl-8 pr-3 py-1.5 rounded-md text-sm text-neutral-500 hover:bg-neutral-100"
                       >
                         {l.label}
                       </Link>
@@ -382,14 +386,14 @@ function Navbar() {
                 <Link
                   to="/login"
                   onClick={closeAll}
-                  className="flex-1 text-center px-4 py-2 text-sm font-semibold text-white bg-orange-600 hover:bg-orange-700 rounded-lg"
+                  className="flex-1 text-center px-4 py-2 text-sm font-semibold text-white bg-neutral-900 hover:bg-black rounded-full"
                 >
                   Sign In
                 </Link>
                 <Link
                   to="/register"
                   onClick={closeAll}
-                  className="flex-1 text-center px-4 py-2 text-sm font-semibold text-orange-600 border border-orange-600 hover:bg-orange-50 rounded-lg"
+                  className="flex-1 text-center px-4 py-2 text-sm font-semibold text-neutral-900 border border-neutral-900 hover:bg-neutral-50 rounded-full"
                 >
                   Register
                 </Link>

@@ -27,21 +27,22 @@ function CategoriesSection() {
   }, [])
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <SectionHeader
+        eyebrow="Departments"
         title="Shop by Category"
-        subtitle="Browse our most popular shopping categories"
+        subtitle="Browse our curated collection across every department"
         linkTo="/products"
       />
       {loading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div
-              key={i}
-              className="animate-pulse p-4 rounded-2xl border border-gray-200"
-            >
-              <div className="w-full h-24 rounded-xl bg-gray-200 mb-3" />
-              <div className="h-4 w-2/3 mx-auto rounded bg-gray-200" />
+            <div key={i} className="animate-pulse rounded-2xl border border-neutral-200 overflow-hidden">
+              <div className="aspect-[4/5] bg-neutral-200" />
+              <div className="p-3 space-y-2">
+                <div className="h-3 w-3/4 mx-auto rounded bg-neutral-200" />
+                <div className="h-2.5 w-1/2 mx-auto rounded bg-neutral-200" />
+              </div>
             </div>
           ))}
         </div>
@@ -51,28 +52,26 @@ function CategoriesSection() {
             <Link
               key={cat._id}
               to={`/categories/${cat.slug}`}
-              className="group flex flex-col items-center p-4 rounded-2xl border border-gray-200 hover:border-orange-300 hover:shadow-md transition-all text-center"
+              className="group relative rounded-2xl overflow-hidden border border-neutral-200 bg-neutral-100"
             >
-              <div className="relative w-full h-24 rounded-xl overflow-hidden mb-3 bg-orange-50 flex items-center justify-center">
-                <span className="text-3xl font-bold text-orange-200">
-                  {cat.name.charAt(0)}
-                </span>
+              <div className="aspect-[4/5]">
                 <img
                   src={cat.image}
                   alt={cat.name}
                   loading="lazy"
-                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   onError={(e) => {
                     e.currentTarget.style.display = 'none'
                   }}
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-neutral-900/80 via-neutral-900/10 to-transparent group-hover:from-neutral-900/90 transition-colors" />
+                <div className="absolute inset-x-0 bottom-0 p-3 text-center">
+                  <p className="font-semibold text-white text-sm">{cat.name}</p>
+                  <p className="text-[11px] text-white/70 line-clamp-1 mt-0.5">
+                    {cat.description}
+                  </p>
+                </div>
               </div>
-              <h3 className="font-semibold text-gray-900 group-hover:text-orange-600 transition-colors">
-                {cat.name}
-              </h3>
-              <p className="text-xs text-gray-500 mt-1 hidden sm:block">
-                {cat.description}
-              </p>
             </Link>
           ))}
         </div>

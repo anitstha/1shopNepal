@@ -56,9 +56,9 @@ function ProductCard({ product }) {
   }
 
   return (
-    <article className="group relative bg-white rounded-2xl border border-gray-200 hover:shadow-lg hover:border-orange-200 transition-all overflow-hidden">
+    <article className="group relative bg-white rounded-2xl border border-neutral-200 hover:border-neutral-300 hover:shadow-xl hover:shadow-neutral-900/5 transition-all duration-300 overflow-hidden">
       {discount > 0 && (
-        <span className="absolute top-3 left-3 z-10 px-2.5 py-1 text-xs font-semibold rounded-full bg-orange-600 text-white">
+        <span className="absolute top-3 left-3 z-10 px-2.5 py-1 text-xs font-semibold rounded-md bg-neutral-900 text-white">
           -{discount}%
         </span>
       )}
@@ -70,22 +70,22 @@ function ProductCard({ product }) {
       >
         <Heart
           className={`w-5 h-5 transition-colors ${
-            wished ? 'fill-red-500 text-red-500' : 'text-gray-400'
+            wished ? 'fill-red-500 text-red-500' : 'text-neutral-400'
           }`}
         />
       </button>
 
       <Link to={`/products/${slug}`} className="block">
-        <div className="bg-gray-50 h-48 overflow-hidden">
+        <div className="bg-neutral-100 aspect-square overflow-hidden">
           {image ? (
             <img
               src={image}
               alt={name}
               loading="lazy"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-300">
+            <div className="w-full h-full flex items-center justify-center text-neutral-300">
               No image
             </div>
           )}
@@ -93,19 +93,19 @@ function ProductCard({ product }) {
       </Link>
 
       <div className="p-4">
-        <p className="text-[11px] uppercase tracking-wide text-orange-600 font-medium">
+        <p className="text-[11px] uppercase tracking-[0.15em] text-neutral-400 font-semibold">
           {categoryName}
         </p>
         <Link
           to={`/products/${slug}`}
-          className="block text-sm font-semibold text-gray-900 hover:text-orange-600 line-clamp-1 mt-0.5"
+          className="block text-sm font-semibold text-neutral-900 hover:text-black line-clamp-1 mt-1"
         >
           {name}
         </Link>
 
-        <div className="mt-1 flex items-center gap-1 text-xs text-gray-500">
+        <div className="mt-1.5 flex items-center gap-1 text-xs text-neutral-500">
           <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-          <span className="font-medium text-gray-700">
+          <span className="font-medium text-neutral-700">
             {rating ? rating.toFixed(1) : 'New'}
           </span>
           {reviewCount > 0 && <span>({reviewCount})</span>}
@@ -114,11 +114,11 @@ function ProductCard({ product }) {
         <div className="mt-3 flex items-end justify-between">
           <div>
             <div className="flex items-baseline gap-2">
-              <span className="text-lg font-bold text-gray-900">
+              <span className="text-lg font-bold text-neutral-900">
                 Rs. {salePrice.toLocaleString()}
               </span>
               {discount > 0 && (
-                <span className="text-sm text-gray-400 line-through">
+                <span className="text-sm text-neutral-400 line-through">
                   Rs. {regularPrice.toLocaleString()}
                 </span>
               )}
@@ -135,10 +135,10 @@ function ProductCard({ product }) {
             onClick={handleAddToCart}
             disabled={!inStock}
             aria-label="Add to cart"
-            className={`p-2 rounded-lg transition-colors ${
+            className={`p-2.5 rounded-xl transition-colors ${
               added
                 ? 'bg-green-600 text-white'
-                : 'bg-orange-600 text-white hover:bg-orange-700'
+                : 'bg-neutral-900 text-white hover:bg-black'
             } ${!inStock ? 'opacity-40 cursor-not-allowed' : ''}`}
           >
             {added ? <Check className="w-4 h-4" /> : <ShoppingCart className="w-4 h-4" />}

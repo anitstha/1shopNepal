@@ -26,9 +26,10 @@ function PopularProducts() {
   }, [])
 
   return (
-    <section className="bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <section className="bg-neutral-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <SectionHeader
+          eyebrow="Trending now"
           title="Popular Products"
           subtitle="Trending items our customers love"
           linkTo="/products"

@@ -1,21 +1,27 @@
 import { Link } from 'react-router-dom'
+import { ArrowRight } from 'lucide-react'
 
-function SectionHeader({ title, subtitle, linkTo, linkLabel = 'View all' }) {
+function SectionHeader({ title, subtitle, linkTo, linkLabel = 'View all', eyebrow }) {
   return (
-    <div className="flex items-end justify-between mb-6">
+    <div className="flex items-end justify-between gap-6 mb-10">
       <div>
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900">{title}</h2>
-        {subtitle && <p className="mt-1 text-gray-500">{subtitle}</p>}
+        {eyebrow && (
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-400 mb-3">
+            {eyebrow}
+          </p>
+        )}
+        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-neutral-900 tracking-tight">
+          {title}
+        </h2>
+        {subtitle && <p className="mt-2 text-neutral-500 text-base">{subtitle}</p>}
       </div>
       {linkTo && (
         <Link
           to={linkTo}
-          className="hidden sm:inline-flex items-center gap-1 text-sm font-medium text-orange-600 hover:text-orange-700"
+          className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-neutral-900 border-b border-neutral-300 pb-0.5 hover:border-neutral-900 transition-colors shrink-0"
         >
           {linkLabel}
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-          </svg>
+          <ArrowRight className="w-4 h-4" />
         </Link>
       )}
     </div>

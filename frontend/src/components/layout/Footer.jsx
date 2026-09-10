@@ -35,16 +35,20 @@ function Footer() {
     : fallbackCategories.map((name) => ({ name, slug: null }));
 
   return (
-    <footer className="bg-gray-900 text-gray-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <footer className="bg-neutral-950 text-neutral-300">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
           <div>
-            <Link to="/" className="flex items-center gap-2">
-              <span className="flex items-center justify-center w-9 h-9 bg-white">
+            <Link to="/" className="flex items-center gap-2.5">
+              <span className="flex items-center justify-center w-9 h-9 bg-white rounded-lg">
                 <img src={logo} alt="1ShopNepal" />
               </span>
+              <span className="flex items-baseline gap-1 text-lg font-bold text-white tracking-tight">
+                1Shop
+                <span className="font-medium text-neutral-400">Nepal</span>
+              </span>
             </Link>
-            <p className="mt-4 text-sm leading-relaxed text-gray-400">
+            <p className="mt-4 text-sm leading-relaxed text-neutral-400">
               Nepal's one-stop online shopping destination. Shop thousands of
               products from the comfort of your home, delivered right to your
               door.
@@ -59,7 +63,7 @@ function Footer() {
                   key={social.label}
                   href="#"
                   aria-label={social.label}
-                  className="p-2 rounded-lg bg-gray-800 text-gray-400 hover:bg-orange-600 hover:text-white transition-colors"
+                  className="p-2 rounded-lg bg-neutral-900 text-neutral-400 hover:bg-white hover:text-neutral-900 border border-neutral-800 transition-colors"
                 >
                   <social.icon className="w-5 h-5" />
                 </a>
@@ -76,7 +80,7 @@ function Footer() {
                 <li key={cat.slug || cat.name}>
                   <Link
                     to={cat.slug ? `/categories/${cat.slug}` : "/products"}
-                    className="text-sm text-gray-400 hover:text-orange-500 transition-colors"
+                    className="text-sm text-neutral-400 hover:text-white transition-colors"
                   >
                     {cat.name}
                   </Link>
@@ -94,7 +98,7 @@ function Footer() {
                 <li key={item.label}>
                   <Link
                     to={item.to}
-                    className="text-sm text-gray-400 hover:text-orange-500 transition-colors"
+                    className="text-sm text-neutral-400 hover:text-white transition-colors"
                   >
                     {item.label}
                   </Link>
@@ -107,22 +111,22 @@ function Footer() {
             <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
               Contact Us
             </h3>
-            <ul className="space-y-3 text-sm text-gray-400">
+            <ul className="space-y-3 text-sm text-neutral-400">
               <li className="flex items-start gap-3">
-                <MapPin className="w-5 h-5 shrink-0 text-orange-500" />
+                <MapPin className="w-5 h-5 shrink-0 text-neutral-500" />
                 Kalimati, Kathmandu, Nepal
               </li>
               <li className="flex items-center gap-3">
-                <Phone className="w-5 h-5 shrink-0 text-orange-500" />
+                <Phone className="w-5 h-5 shrink-0 text-neutral-500" />
                 +977-9803075499
               </li>
               <li className="flex items-center gap-3">
-                <Mail className="w-5 h-5 shrink-0 text-orange-500" />
+                <Mail className="w-5 h-5 shrink-0 text-neutral-500" />
                 support@1shopnepal.com
               </li>
             </ul>
-            <div className="mt-5 p-3 rounded-xl bg-gray-800">
-              <p className="text-xs text-gray-400">
+            <div className="mt-5 p-3 rounded-xl bg-neutral-900 border border-neutral-800">
+              <p className="text-xs text-neutral-400">
                 <span className="font-semibold text-white">Support hours:</span>
                 Sun-Fri, 9 AM - 6 PM (NPT)
               </p>
@@ -130,11 +134,11 @@ function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 pt-6 border-t border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-gray-500">
+        <div className="mt-10 pt-6 border-t border-neutral-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="text-xs text-neutral-500">
             &copy; {new Date().getFullYear()} 1ShopNepal. All rights reserved.
           </p>
-          <p className="text-xs text-gray-600">Proudly made in Nepal 🇳🇵</p>
+          <p className="text-xs text-neutral-600">Proudly made in Nepal 🇳🇵</p>
         </div>
       </div>
     </footer>

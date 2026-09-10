@@ -26,8 +26,9 @@ const reasons = [
 
 function WhyChooseUs() {
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <SectionHeader
+        eyebrow="Why us"
         title="Why Choose 1ShopNepal?"
         subtitle="The smartest way to shop online in Nepal"
       />
@@ -35,13 +36,13 @@ function WhyChooseUs() {
         {reasons.map((reason) => (
           <div
             key={reason.title}
-            className="p-6 rounded-2xl border border-gray-200 hover:shadow-lg hover:border-orange-200 transition-all"
+            className="group p-6 rounded-2xl border border-neutral-200 hover:border-neutral-900 hover:shadow-xl hover:shadow-neutral-900/5 transition-all duration-300"
           >
-            <div className="w-14 h-14 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center mb-4">
-              <reason.icon className="w-7 h-7" />
+            <div className="w-12 h-12 rounded-xl bg-neutral-900 text-white flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
+              <reason.icon className="w-6 h-6" />
             </div>
-            <h3 className="text-lg font-bold text-gray-900">{reason.title}</h3>
-            <p className="mt-2 text-sm text-gray-600">{reason.desc}</p>
+            <h3 className="text-lg font-bold text-neutral-900">{reason.title}</h3>
+            <p className="mt-2 text-sm text-neutral-500 leading-relaxed">{reason.desc}</p>
           </div>
         ))}
       </div>
