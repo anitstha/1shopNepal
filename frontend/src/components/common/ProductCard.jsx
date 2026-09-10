@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import { Star, Heart, ShoppingCart, Check } from 'lucide-react'
 import { useCart } from '../../context/CartContext'
 import { useAuth } from '../../context/AuthContext'
@@ -31,6 +32,7 @@ function ProductCard({ product }) {
 
   const handleAddToCart = async () => {
     if (!user) {
+      toast.info('Please sign in to add items to your cart')
       window.location.href = '/login'
       return
     }
@@ -39,19 +41,20 @@ function ProductCard({ product }) {
       setAdded(true)
       setTimeout(() => setAdded(false), 1500)
     } catch (err) {
-      window.alert(err.message)
+      toast.error(err.message)
     }
   }
 
   const handleToggleWishlist = async () => {
     if (!user) {
+      toast.info('Please sign in to save items to your wishlist')
       window.location.href = '/login'
       return
     }
     try {
       await toggleWishlist(id)
     } catch (err) {
-      window.alert(err.message)
+      toast.error(err.message)
     }
   }
 

@@ -2,7 +2,10 @@ const User = require('../models/User')
 const Product = require('../models/Product')
 const Order = require('../models/Order')
 const Review = require('../models/Review')
+const Cart = require('../models/Cart')
+const Wishlist = require('../models/Wishlist')
 const asyncHandler = require('../utils/asyncHandler')
+const { updateProductRating } = require('./reviewController')
 
 exports.getDashboardStats = asyncHandler(async (req, res) => {
   const [totalUsers, totalProducts, totalOrders, orderStatusSummary, ordersAgg] =
@@ -217,5 +220,45 @@ exports.getAdminReviews = asyncHandler(async (req, res) => {
     page: pageNum,
     pages: Math.ceil(total / limitNum),
     reviews,
+  })
+})
+
+exports.deleteUser = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id)
+
+  if (!user) {
+    res.status(404)
+    throw new Error('User not found')
+  }
+
+  if (user._id.toString() === req.user._id.toString()) {
+    res.status(400)
+    throw new Error('Admins cannot delete their own account')
+  }
+
+  const orderCount = await Order.countDocuments({ user: user._id })
+  if (orderCount > 0) {
+    res.status(400)
+    throw new Error(
+      'This user has orders. Deactivate the account instead of deleting it to preserve order records.'
+    )
+  }
+
+  const reviews = await Review.find({ user: user._id }).select('product')
+  const productIds = [...new Set(reviews.map((r) => r.product.toString()))]
+
+  await Promise.all([
+    Cart.deleteOne({ user: user._id }),
+    Wishlist.deleteOne({ user: user._id }),
+    Review.deleteMany({ user: user._id }),
+  ])
+
+  await Promise.all(productIds.map((id) => updateProductRating(id)))
+
+  await user.deleteOne()
+
+  res.json({
+    success: true,
+    message: 'User deleted successfully',
   })
 })

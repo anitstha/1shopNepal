@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import { authApi } from '../services/api'
+import { authApi, uploadApi } from '../services/api'
 import { saveToken, getToken, removeToken } from '../utils/auth'
 
 const AuthContext = createContext()
@@ -53,6 +53,18 @@ export function AuthProvider({ children }) {
     setUser(null)
   }, [])
 
+  const updateUser = useCallback(async (data) => {
+    const updated = await authApi.updateProfile(data)
+    setUser((prev) => (prev ? { ...prev, ...updated } : updated))
+    return updated
+  }, [])
+
+  const updateProfileImage = useCallback(async (file) => {
+    const updated = await uploadApi.uploadProfileImage(file)
+    setUser((prev) => (prev ? { ...prev, ...updated } : updated))
+    return updated
+  }, [])
+
   return (
     <AuthContext.Provider
       value={{
@@ -61,6 +73,8 @@ export function AuthProvider({ children }) {
         login,
         register,
         logout,
+        updateUser,
+        updateProfileImage,
         isAuthenticated: !!user,
         isAdmin: !!user && user.role === 'admin',
       }}

@@ -1,9 +1,17 @@
 const asyncHandler = require('../utils/asyncHandler')
 const { configureCloudinary, isCloudinaryConfigured } = require('../config/cloudinary')
 
-const uploadImageToCloudinary = (cloudinary, buffer, originalname) => {
+const uploadImageToCloudinary = (
+  cloudinary,
+  buffer,
+  originalname,
+  {
+    prefix = 'products',
+    transformation = [{ width: 1200, crop: 'limit', quality: 'auto' }],
+  } = {}
+) => {
   return new Promise((resolve, reject) => {
-    const publicId = `products/${Date.now()}-${originalname
+    const publicId = `${prefix}/${Date.now()}-${originalname
       .replace(/\.[^.]+$/, '')
       .replace(/[^a-zA-Z0-9-_]/g, '-')
       .slice(0, 50)}`
@@ -11,9 +19,9 @@ const uploadImageToCloudinary = (cloudinary, buffer, originalname) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
         public_id: publicId,
-        folder: '1shopnepal/products',
+        folder: `1shopnepal/${prefix}`,
         resource_type: 'image',
-        transformation: [{ width: 1200, crop: 'limit', quality: 'auto' }],
+        transformation,
       },
       (error, result) => {
         if (error) {

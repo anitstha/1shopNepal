@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import { Wallet, AlertTriangle, Loader2, ArrowLeft, CheckCircle2 } from 'lucide-react'
 import Seo from '../components/common/Seo'
 import { orderApi, paymentApi } from '../services/api'
@@ -42,12 +43,14 @@ function MockKhaltiPage() {
   const handlePay = async () => {
     if (!pidx) {
       setError('Missing payment reference.')
+      toast.error('Missing payment reference.')
       return
     }
     setPhase('processing')
     setError('')
     try {
       const res = await paymentApi.verifyKhalti(pidx)
+      toast.success(`Payment of Rs. ${Number(order.totalAmount || 0).toLocaleString()} completed!`)
       navigate(
         '/order-success',
         {
@@ -61,11 +64,13 @@ function MockKhaltiPage() {
       )
     } catch (err) {
       setError(err.message)
+      toast.error(err.message)
       setPhase('failed')
     }
   }
 
   const handleCancel = () => {
+    toast.info('Payment cancelled')
     navigate('/orders', { replace: true })
   }
 

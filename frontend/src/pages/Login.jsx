@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import Seo from '../components/common/Seo'
 import { useAuth } from '../context/AuthContext'
 
@@ -8,7 +9,6 @@ const inputClass =
 
 function Login() {
   const [form, setForm] = useState({ email: '', password: '' })
-  const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const { login } = useAuth()
   const navigate = useNavigate()
@@ -18,18 +18,17 @@ function Login() {
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value })
-    setError('')
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSubmitting(true)
-    setError('')
     try {
-      await login(form)
+      const data = await login(form)
+      toast.success(`Welcome back${data.name ? `, ${data.name.split(' ')[0]}` : ''}!`)
       navigate(from, { replace: true })
     } catch (err) {
-      setError(err.message)
+      toast.error(err.message)
     } finally {
       setSubmitting(false)
     }
@@ -52,12 +51,6 @@ function Login() {
           onSubmit={handleSubmit}
           className="p-6 sm:p-8 rounded-2xl border border-gray-200 bg-white shadow-sm space-y-5"
         >
-          {error && (
-            <div className="px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-600">
-              {error}
-            </div>
-          )}
-
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
               Email

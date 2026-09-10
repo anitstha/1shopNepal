@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import { CheckCircle2, Package, Banknote, Wallet, Loader2, AlertTriangle } from 'lucide-react'
 import Seo from '../components/common/Seo'
 import { orderApi } from '../services/api'
@@ -17,6 +18,7 @@ function OrderSuccess() {
   const orderId = location.state?.orderId
   const [order, setOrder] = useState(null)
   const [loading, setLoading] = useState(!!orderId)
+  const successToastFired = useRef(false)
 
   useEffect(() => {
     if (!orderId) return
@@ -34,6 +36,13 @@ function OrderSuccess() {
       mounted = false
     }
   }, [orderId])
+
+  useEffect(() => {
+    if (order && !successToastFired.current) {
+      successToastFired.current = true
+      toast.success(`Order #${order._id.slice(-8).toUpperCase()} placed successfully!`)
+    }
+  }, [order])
 
   const shortId = order?._id || orderId
   const shortened = shortId ? shortId.slice(-8).toUpperCase() : ''

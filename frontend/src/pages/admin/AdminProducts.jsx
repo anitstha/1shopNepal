@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import { Plus, Pencil, Trash2, Loader2, Check, X } from 'lucide-react'
 import { productApi } from '../../services/api'
 
@@ -68,8 +69,10 @@ function AdminProducts() {
       await productApi.updateProduct(id, { stock: next })
       cancelStockEdit()
       reload()
+      toast.success('Stock updated')
     } catch (err) {
       setError(err.message)
+      toast.error(err.message)
     } finally {
       setSavingStock(false)
     }
@@ -80,8 +83,10 @@ function AdminProducts() {
     try {
       await productApi.deleteProduct(id)
       reload()
+      toast.success(`"${name}" deleted`)
     } catch (err) {
       setError(err.message)
+      toast.error(err.message)
     }
   }
 

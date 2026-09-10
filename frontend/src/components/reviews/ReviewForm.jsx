@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { toast } from 'react-toastify'
 import { Star, Loader2 } from 'lucide-react'
 import StarRating from './StarRating'
 
@@ -12,6 +13,7 @@ function ReviewForm({ initialRating = 5, initialComment = '', onSubmit, submitLa
     e.preventDefault()
     if (!rating) {
       setError('Please select a rating')
+      toast.error('Please select a rating')
       return
     }
     setSubmitting(true)
@@ -20,6 +22,7 @@ function ReviewForm({ initialRating = 5, initialComment = '', onSubmit, submitLa
       await onSubmit({ rating, comment: comment.trim() })
     } catch (err) {
       setError(err.message)
+      toast.error(err.message)
     } finally {
       setSubmitting(false)
     }

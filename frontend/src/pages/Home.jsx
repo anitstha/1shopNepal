@@ -4,7 +4,6 @@ import FeaturedProducts from '../components/home/FeaturedProducts'
 import DealSection from '../components/home/DealSection'
 import PopularProducts from '../components/home/PopularProducts'
 import WhyChooseUs from '../components/home/WhyChooseUs'
-import Newsletter from '../components/home/Newsletter'
 import Seo from '../components/common/Seo'
 import { siteUrl } from '../utils/seo'
 
@@ -50,7 +49,6 @@ function Home() {
       <DealSection />
       <PopularProducts />
       <WhyChooseUs />
-      <Newsletter />
     </div>
   )
 }

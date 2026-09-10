@@ -113,3 +113,5 @@ exports.deleteReview = asyncHandler(async (req, res) => {
 
   res.json({ message: 'Review removed' })
 })
+
+exports.updateProductRating = updateProductRating

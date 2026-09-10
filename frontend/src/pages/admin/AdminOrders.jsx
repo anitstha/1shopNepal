@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import { Loader2, Search } from 'lucide-react'
 import { adminApi, orderApi } from '../../services/api'
 import StatusBadge from '../../components/orders/StatusBadge'
@@ -62,8 +63,10 @@ function AdminOrders() {
       await orderApi.updateOrderStatus(orderId, { orderStatus: nextStatus })
       const res = await adminApi.getOrders({ page, limit: 20, status, search })
       setOrders(res.orders)
+      toast.success(`Order status updated to "${nextStatus}"`)
     } catch (err) {
       setError(err.message)
+      toast.error(err.message)
     } finally {
       setUpdatingId(null)
     }

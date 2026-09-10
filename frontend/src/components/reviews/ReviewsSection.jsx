@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import { MessageSquare, Loader2 } from 'lucide-react'
 import { reviewApi } from '../../services/api'
 import { useAuth } from '../../context/AuthContext'
@@ -48,6 +49,7 @@ function ReviewsSection({ product, onProductUpdate }) {
     setEditingReview(null)
     await reload()
     await onProductUpdate()
+    toast.success('Thanks! Your review has been published.')
   }
 
   const handleUpdate = async (data) => {
@@ -55,6 +57,7 @@ function ReviewsSection({ product, onProductUpdate }) {
     setEditingReview(null)
     await reload()
     await onProductUpdate()
+    toast.success('Review updated successfully.')
   }
 
   const handleEdit = (review) => {
@@ -69,8 +72,9 @@ function ReviewsSection({ product, onProductUpdate }) {
       setEditingReview(null)
       await reload()
       await onProductUpdate()
+      toast.success('Review deleted.')
     } catch (err) {
-      window.alert(err.message)
+      toast.error(err.message)
     }
   }
 

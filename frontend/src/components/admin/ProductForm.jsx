@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import { Upload, X, Loader2, Image as ImageIcon } from 'lucide-react'
 import { productApi, categoryApi, uploadApi } from '../../services/api'
 
@@ -113,8 +114,10 @@ function ProductForm({ isEdit = false }) {
       const res = await uploadApi.uploadImages(selectedFiles)
       setImageUrls((prev) => [...prev, ...res.images])
       setSelectedFiles([])
+      toast.success('Images uploaded')
     } catch (err) {
       setError(err.message)
+      toast.error(err.message)
     } finally {
       setUploading(false)
     }
@@ -166,15 +169,18 @@ function ProductForm({ isEdit = false }) {
       if (isEdit) {
         await productApi.updateProduct(id, payload)
         setSuccess('Product updated successfully')
+        toast.success('Product updated successfully')
       } else {
         await productApi.createProduct(payload)
         setSuccess('Product created successfully')
+        toast.success('Product created successfully')
         setForm(EMPTY_FORM)
         setImageUrls([])
       }
       setTimeout(() => navigate('/admin/products'), 800)
     } catch (err) {
       setError(err.message)
+      toast.error(err.message)
     } finally {
       setSubmitting(false)
     }

@@ -1,6 +1,7 @@
 const express = require('express')
 const cors = require('cors')
 const dotenv = require('dotenv')
+const path = require('path')
 
 const requestLogger = require('./middleware/requestLogger')
 const healthRoutes = require('./routes/healthRoutes')
@@ -24,6 +25,7 @@ const app = express()
 
 app.use(cors({ origin: process.env.CLIENT_URL }))
 app.use(express.json())
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 app.use(requestLogger)
 
 app.use('/api', healthRoutes)

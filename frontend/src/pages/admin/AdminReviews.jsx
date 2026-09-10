@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import { Loader2, Trash2, Star, Search } from 'lucide-react'
 import { adminApi, reviewApi } from '../../services/api'
 import StarRating from '../../components/reviews/StarRating'
@@ -44,8 +45,10 @@ function AdminReviews() {
       await reviewApi.deleteReview(id)
       setReviews((prev) => prev.filter((r) => r._id !== id))
       setTotal((t) => Math.max(0, t - 1))
+      toast.success('Review deleted')
     } catch (err) {
       setError(err.message)
+      toast.error(err.message)
     } finally {
       setDeletingId(null)
     }

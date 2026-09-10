@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { toast } from 'react-toastify'
 import { Plus, Pencil, Trash2, Loader2, X, Check, Save } from 'lucide-react'
 import { categoryApi } from '../../services/api'
 
@@ -40,8 +41,10 @@ function AdminCategories() {
       const res = await categoryApi.createCategory(form)
       setCategories((prev) => [res.category, ...prev])
       setForm({ name: '', description: '', image: '' })
+      toast.success('Category created')
     } catch (err) {
       setError(err.message)
+      toast.error(err.message)
     } finally {
       setSubmitting(false)
     }
@@ -65,8 +68,10 @@ function AdminCategories() {
       const res = await categoryApi.updateCategory(editingId, editForm)
       setCategories((prev) => prev.map((c) => (c._id === editingId ? res.category : c)))
       cancelEdit()
+      toast.success('Category updated')
     } catch (err) {
       setError(err.message)
+      toast.error(err.message)
     } finally {
       setSubmitting(false)
     }
@@ -77,8 +82,10 @@ function AdminCategories() {
     try {
       await categoryApi.deleteCategory(id)
       setCategories((prev) => prev.filter((c) => c._id !== id))
+      toast.success(`Category "${name}" deleted`)
     } catch (err) {
       setError(err.message)
+      toast.error(err.message)
     }
   }
 

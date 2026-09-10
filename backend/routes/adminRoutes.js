@@ -6,6 +6,7 @@ const {
   getAdminOrders,
   getAdminUsers,
   updateAdminUser,
+  deleteUser,
   getAdminReviews,
 } = require('../controllers/adminController')
 
@@ -16,5 +17,6 @@ router.get('/orders', getAdminOrders)
 router.get('/reviews', getAdminReviews)
 router.get('/users', getAdminUsers)
 router.put('/users/:id', updateAdminUser)
+router.delete('/users/:id', deleteUser)
 
 module.exports = router

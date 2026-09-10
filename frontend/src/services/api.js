@@ -66,6 +66,11 @@ export const authApi = {
       body: JSON.stringify(credentials),
     }),
   getMe: () => request('/auth/me'),
+  updateProfile: (data) =>
+    request('/auth/me', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
 }
 
 export const categoryApi = {
@@ -121,6 +126,11 @@ export const uploadApi = {
     const formData = new FormData()
     files.forEach((file) => formData.append('images', file))
     return requestMultipart('/upload', formData)
+  },
+  uploadProfileImage: (file) => {
+    const formData = new FormData()
+    formData.append('image', file)
+    return requestMultipart('/auth/profile-image', formData)
   },
 }
 
@@ -214,6 +224,10 @@ export const adminApi = {
     request(`/admin/users/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
+    }),
+  deleteUser: (id) =>
+    request(`/admin/users/${id}`, {
+      method: 'DELETE',
     }),
   getReviews: (params = {}) => {
     const query = new URLSearchParams(

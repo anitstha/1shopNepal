@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import { Minus, Plus, Trash2, ShoppingCart, ArrowRight } from 'lucide-react'
 import Seo from '../components/common/Seo'
 import { useCart } from '../context/CartContext'
@@ -11,6 +12,14 @@ function Cart() {
   const { items, subtotal, itemCount, loading, updateItem, removeItem, clearCart } =
     useCart()
   const { user } = useAuth()
+
+  const guard = (fn) => async () => {
+    try {
+      await fn()
+    } catch (err) {
+      toast.error(err.message)
+    }
+  }
 
   if (!user) {
     return (
@@ -95,7 +104,7 @@ function Cart() {
                     {item.product.name}
                   </Link>
                   <button
-                    onClick={() => removeItem(item.product._id)}
+                    onClick={guard(() => removeItem(item.product._id))}
                     className="text-gray-400 hover:text-red-600"
                     aria-label="Remove item"
                   >
@@ -110,9 +119,9 @@ function Cart() {
                 <div className="mt-auto flex items-center justify-between pt-3">
                   <div className="flex items-center border border-gray-300 rounded-lg">
                     <button
-                      onClick={() =>
+                      onClick={guard(() =>
                         updateItem(item.product._id, Math.max(1, item.quantity - 1))
-                      }
+                      )}
                       className="p-2 hover:bg-gray-50"
                       aria-label="Decrease quantity"
                     >
@@ -120,9 +129,9 @@ function Cart() {
                     </button>
                     <span className="w-10 text-center font-medium">{item.quantity}</span>
                     <button
-                      onClick={() =>
+                      onClick={guard(() =>
                         updateItem(item.product._id, item.quantity + 1)
-                      }
+                      )}
                       disabled={
                         item.quantity >= item.product.stock
                       }
@@ -142,7 +151,7 @@ function Cart() {
 
           <div className="flex justify-end">
             <button
-              onClick={clearCart}
+              onClick={guard(() => clearCart())}
               className="text-sm text-gray-500 hover:text-red-600"
             >
               Clear Cart

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import { Star, Heart, ShoppingCart, Check, Minus, Plus, Truck, ShieldCheck, RotateCcw } from 'lucide-react'
 import ProductCard from '../components/common/ProductCard'
 import Seo from '../components/common/Seo'
@@ -7,18 +8,19 @@ import ReviewsSection from '../components/reviews/ReviewsSection'
 import { productApi, recommendationApi } from '../services/api'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
+import { useWishlist } from '../context/WishlistContext'
 import { truncate, siteUrl } from '../utils/seo'
 
 function ProductDetails() {
   const { id } = useParams()
   const { addToCart } = useCart()
   const { user } = useAuth()
+  const { toggleWishlist, isWishlisted } = useWishlist()
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [activeImage, setActiveImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
-  const [liked, setLiked] = useState(false)
   const [added, setAdded] = useState(false)
   const [recommended, setRecommended] = useState([])
   const [related, setRelated] = useState([])
@@ -52,6 +54,7 @@ function ProductDetails() {
 
   const handleAddToCart = async () => {
     if (!user) {
+      toast.info('Please sign in to add items to your cart')
       window.location.href = '/login'
       return
     }
@@ -60,7 +63,20 @@ function ProductDetails() {
       setAdded(true)
       setTimeout(() => setAdded(false), 1500)
     } catch (err) {
-      window.alert(err.message)
+      toast.error(err.message)
+    }
+  }
+
+  const handleToggleWishlist = async () => {
+    if (!user) {
+      toast.info('Please sign in to save items to your wishlist')
+      window.location.href = '/login'
+      return
+    }
+    try {
+      await toggleWishlist(product._id)
+    } catch (err) {
+      toast.error(err.message)
     }
   }
 
@@ -117,6 +133,7 @@ function ProductDetails() {
       ? Math.round(((regularPrice - salePrice) / regularPrice) * 100)
       : 0
   const inStock = Number(product.stock ?? 0) > 0
+  const liked = isWishlisted(product._id)
   const specs = product.specifications
     ? Object.entries(product.specifications)
     : []
@@ -354,8 +371,8 @@ function ProductDetails() {
             </button>
 
             <button
-              onClick={() => setLiked((l) => !l)}
-              aria-label="Add to wishlist"
+              onClick={handleToggleWishlist}
+              aria-label={liked ? 'Remove from wishlist' : 'Add to wishlist'}
               className="p-3 border border-gray-300 rounded-lg hover:bg-gray-50"
             >
               <Heart

@@ -1,4 +1,7 @@
+import { Suspense, lazy } from 'react'
 import { Routes, Route } from 'react-router-dom'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 import MainLayout from './layouts/MainLayout'
 import ProtectedRoute from './components/ProtectedRoute'
 import AdminRoute from './components/AdminRoute'
@@ -17,6 +20,9 @@ import MockKhaltiPage from './pages/MockKhaltiPage'
 import Orders from './pages/Orders'
 import OrderDetails from './pages/OrderDetails'
 import Account from './pages/Account'
+
+const ContactUs = lazy(() => import('./pages/ContactUs'))
+const DataPolicy = lazy(() => import('./pages/DataPolicy'))
 import AdminLayout from './components/admin/AdminLayout'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminProducts from './pages/admin/AdminProducts'
@@ -29,7 +35,15 @@ import AdminReviews from './pages/admin/AdminReviews'
 
 function App() {
   return (
-    <Routes>
+    <>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-neutral-200 border-t-neutral-950 rounded-full animate-spin" />
+        </div>
+      }
+    >
+      <Routes>
       <Route element={<MainLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/categories" element={<Products />} />
@@ -62,9 +76,14 @@ function App() {
           <Route path="" element={<OrderDetails />} />
         </Route>
 
-        <Route element={<ProtectedRoute />}>
+        <Route
+          element={<ProtectedRoute />}
+        >
           <Route path="/account" element={<Account />} />
         </Route>
+
+        <Route path="/contact" element={<ContactUs />} />
+        <Route path="/privacy-policy" element={<DataPolicy />} />
 
         <Route element={<AdminRoute />}>
           <Route path="/admin" element={<AdminLayout />}>
@@ -80,6 +99,16 @@ function App() {
         </Route>
       </Route>
     </Routes>
+    </Suspense>
+    <ToastContainer
+      position="top-right"
+      autoClose={3000}
+      newestOnTop
+      closeOnClick
+      pauseOnHover
+      theme="light"
+    />
+    </>
   )
 }
 

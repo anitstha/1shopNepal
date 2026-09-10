@@ -68,6 +68,10 @@ const userSchema = new mongoose.Schema(
       trim: true,
       match: [/^[0-9]{10}$/, 'Phone number must be 10 digits'],
     },
+    profileImage: {
+      type: String,
+      trim: true,
+    },
     role: {
       type: String,
       enum: {

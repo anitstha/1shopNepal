@@ -1,4 +1,5 @@
 const Category = require('../models/Category')
+const Product = require('../models/Product')
 const asyncHandler = require('../utils/asyncHandler')
 const generateSlug = require('../utils/generateSlug')
 
@@ -122,6 +123,14 @@ const deleteCategory = asyncHandler(async (req, res) => {
   if (!category) {
     res.status(404)
     throw new Error('Category not found')
+  }
+
+  const productCount = await Product.countDocuments({ category: category._id })
+  if (productCount > 0) {
+    res.status(400)
+    throw new Error(
+      `Category "${category.name}" has ${productCount} product(s). Move or delete them before removing this category.`
+    )
   }
 
   await category.deleteOne()

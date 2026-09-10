@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { toast } from 'react-toastify'
 import { cartApi } from '../services/api'
 import { useAuth } from './AuthContext'
 
@@ -65,6 +66,7 @@ export function CartProvider({ children }) {
     async (productId, quantity = 1) => {
       const data = await cartApi.addToCart(productId, quantity)
       if (data.cart) handleCartPayload(data.cart)
+      toast.success('Added to cart')
       return data
     },
     []
@@ -73,18 +75,21 @@ export function CartProvider({ children }) {
   const updateItem = useCallback(async (productId, quantity) => {
     const data = await cartApi.updateItem(productId, quantity)
     if (data.cart) handleCartPayload(data.cart)
+    toast.success('Cart updated')
     return data
   }, [])
 
   const removeItem = useCallback(async (productId) => {
     const data = await cartApi.removeItem(productId)
     if (data.cart) handleCartPayload(data.cart)
+    toast.success('Removed from cart')
     return data
   }, [])
 
   const clearCart = useCallback(async () => {
     const data = await cartApi.clearCart()
     if (data.cart) setCartItems([])
+    toast.success('Cart cleared')
     return data
   }, [])
 

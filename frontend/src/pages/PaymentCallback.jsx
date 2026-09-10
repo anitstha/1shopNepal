@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import { Loader2, AlertCircle, RotateCcw } from 'lucide-react'
 import Seo from '../components/common/Seo'
 import { paymentApi } from '../services/api'
@@ -18,6 +19,7 @@ function PaymentCallback() {
       .verifyKhalti(pidx)
       .then((res) => {
         if (mounted) {
+          toast.success('Payment successful!')
           navigate(
             '/order-success',
             {
@@ -32,7 +34,10 @@ function PaymentCallback() {
         }
       })
       .catch((err) => {
-        if (mounted) setError(err.message)
+        if (mounted) {
+          setError(err.message)
+          toast.error(err.message)
+        }
       })
     return () => {
       mounted = false

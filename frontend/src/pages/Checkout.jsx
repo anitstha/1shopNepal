@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import { ShoppingCart, Loader2, Banknote, Lock, Wallet, ExternalLink } from 'lucide-react'
 import Seo from '../components/common/Seo'
 import { useCart } from '../context/CartContext'
@@ -54,10 +55,12 @@ function Checkout() {
     e.preventDefault()
     if (items.length === 0) {
       setError('Your cart is empty.')
+      toast.error('Your cart is empty.')
       return
     }
     if (!form.fullName.trim() || !form.phone.trim() || !form.addressLine.trim() || !form.city.trim() || !form.district.trim()) {
       setError('Please fill in all required shipping details.')
+      toast.error('Please fill in all required shipping details.')
       return
     }
 
@@ -101,6 +104,7 @@ function Checkout() {
       window.location.assign(initiated.payment_url)
     } catch (err) {
       setError(err.message)
+      toast.error(err.message)
       setPhase('idle')
     }
   }

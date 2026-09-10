@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import logo from "/public/logo.svg";
 import {
   Search,
@@ -29,6 +30,8 @@ function Navbar() {
   const { itemCount } = useCart();
   const [categories, setCategories] = useState([]);
   const [searchInput, setSearchInput] = useState("");
+  const catRef = useRef(null);
+  const userRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -38,10 +41,29 @@ function Navbar() {
       .catch(() => setCategories([]));
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (catRef.current && !catRef.current.contains(e.target)) {
+        setCatOpen(false);
+      }
+      if (userRef.current && !userRef.current.contains(e.target)) {
+        setUserOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const closeAll = () => {
     setMenuOpen(false);
     setCatOpen(false);
     setUserOpen(false);
+  };
+
+  const handleLogout = () => {
+    logout();
+    toast.success("Logged out successfully");
+    closeAll();
   };
 
   const handleSearch = (e) => {
@@ -64,31 +86,43 @@ function Navbar() {
             <span className="flex items-center justify-center w-9 h-9">
               <img src={logo} alt="" />
             </span>
-            <span className="hidden sm:flex items-baseline gap-1 text-lg font-bold text-neutral-900 tracking-tight">
-              1Shop
-              <span className="font-medium text-neutral-500">Nepal</span>
-            </span>
           </Link>
 
           {/* Desktop nav links */}
           <div className="hidden md:flex items-center ml-6 space-x-1">
             {navLinks.map((link) =>
               link.label === "Categories" ? (
-                <div
-                  key={link.to}
-                  className="relative"
-                  onMouseEnter={() => setCatOpen(true)}
-                  onMouseLeave={() => setCatOpen(false)}
-                >
-                  <Link
-                    to="/products"
-                    className="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-neutral-700 hover:text-neutral-900"
+                <div key={link.to} className="relative" ref={catRef}>
+                  <button
+                    onClick={() => {
+                      setCatOpen((open) => !open);
+                      setUserOpen(false);
+                    }}
+                    aria-expanded={catOpen}
+                    className={`inline-flex items-center gap-1 px-3 py-2 text-sm font-medium transition-colors ${
+                      catOpen
+                        ? "text-neutral-900"
+                        : "text-neutral-700 hover:text-neutral-900"
+                    }`}
                   >
                     Categories
-                    <ChevronDown className="w-4 h-4" />
-                  </Link>
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform duration-200 ${
+                        catOpen ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
                   {catOpen && (
-                    <div className="absolute left-0 mt-1 w-56 bg-white rounded-xl border border-neutral-200 shadow-xl shadow-neutral-900/5 py-2">
+                    <div className="absolute left-0 mt-2 w-56 bg-white rounded-xl border border-neutral-200 shadow-xl shadow-neutral-900/5 py-2">
+                      <Link
+                        to="/categories"
+                        onClick={closeAll}
+                        className="flex items-center justify-between px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-50"
+                      >
+                        All Categories
+                        <ChevronDown className="w-4 h-4 -rotate-90" />
+                      </Link>
+                      <div className="mb-1 border-t border-neutral-100" />
                       {categories.map((cat) => (
                         <Link
                           key={cat._id}
@@ -174,17 +208,32 @@ function Navbar() {
           {/* Login / Profile */}
           <div className="hidden md:block ml-2">
             {isAuthenticated ? (
-              <div
-                className="relative"
-                onMouseEnter={() => setUserOpen(true)}
-                onMouseLeave={() => setUserOpen(false)}
-              >
-                <button className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-neutral-700 hover:text-neutral-900 transition-colors">
-                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-neutral-900 text-white font-bold text-sm">
-                    {user.name.charAt(0).toUpperCase()}
+              <div className="relative" ref={userRef}>
+                <button
+                  onClick={() => {
+                    setUserOpen((open) => !open);
+                    setCatOpen(false);
+                  }}
+                  aria-expanded={userOpen}
+                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-neutral-700 hover:text-neutral-900 transition-colors"
+                >
+                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-neutral-900 text-white font-bold text-sm overflow-hidden">
+                    {user.profileImage ? (
+                      <img
+                        src={user.profileImage}
+                        alt={user.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      user.name.charAt(0).toUpperCase()
+                    )}
                   </span>
                   {user.name.split(" ")[0]}
-                  <ChevronDown className="w-4 h-4" />
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform duration-200 ${
+                      userOpen ? "rotate-180" : ""
+                    }`}
+                  />
                 </button>
                 {userOpen && (
                   <div className="absolute right-0 mt-1 w-48 bg-white rounded-xl border border-neutral-200 shadow-xl shadow-neutral-900/5 py-2">
@@ -232,10 +281,7 @@ function Navbar() {
                       </>
                     )}
                     <button
-                      onClick={() => {
-                        logout();
-                        closeAll();
-                      }}
+                      onClick={handleLogout}
                       className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                     >
                       <LogOut className="w-4 h-4" />
@@ -372,10 +418,7 @@ function Navbar() {
                   </>
                 )}
                 <button
-                  onClick={() => {
-                    logout();
-                    closeAll();
-                  }}
+                  onClick={handleLogout}
                   className="flex items-center gap-2 w-full px-3 py-2 rounded-md text-sm font-medium text-red-600 hover:bg-red-50"
                 >
                   <LogOut className="w-4 h-4" /> Logout

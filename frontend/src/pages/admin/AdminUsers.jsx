@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
-import { Loader2, Search, Shield, ShieldCheck, User as UserIcon, Loader } from 'lucide-react'
+import { toast } from 'react-toastify'
+import { Loader2, Search, Shield, ShieldCheck, User as UserIcon, Loader, Trash2 } from 'lucide-react'
 import { adminApi } from '../../services/api'
+import { useAuth } from '../../context/AuthContext'
 
 function AdminUsers() {
+  const { user: currentUser } = useAuth()
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -37,8 +40,10 @@ function AdminUsers() {
       const newRole = user.role === 'admin' ? 'customer' : 'admin'
       const res = await adminApi.updateUser(user._id, { role: newRole })
       setUsers((prev) => prev.map((u) => (u._id === user._id ? { ...u, ...res.user } : u)))
+      toast.success(`${user.email} is now ${newRole}`)
     } catch (err) {
       setError(err.message)
+      toast.error(err.message)
     } finally {
       setBusyId(null)
     }
@@ -52,8 +57,10 @@ function AdminUsers() {
     try {
       const res = await adminApi.updateUser(user._id, { isActive: next })
       setUsers((prev) => prev.map((u) => (u._id === user._id ? { ...u, ...res.user } : u)))
+      toast.success(`Account ${next ? 'enabled' : 'disabled'} for ${user.email}`)
     } catch (err) {
       setError(err.message)
+      toast.error(err.message)
     } finally {
       setBusyId(null)
     }
@@ -64,11 +71,27 @@ function AdminUsers() {
     setSearch(searchInput.trim())
   }
 
+  const handleDelete = async (user) => {
+    if (!window.confirm(`Permanently delete user "${user.email}"? This cannot be undone.`)) return
+    setBusyId(user._id)
+    setError('')
+    try {
+      await adminApi.deleteUser(user._id)
+      setUsers((prev) => prev.filter((u) => u._id !== user._id))
+      toast.success(`Deleted user ${user.email}`)
+    } catch (err) {
+      setError(err.message)
+      toast.error(err.message)
+    } finally {
+      setBusyId(null)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Users</h1>
-        <p className="mt-1 text-gray-600">Manage user roles and account status.</p>
+        <p className="mt-1 text-gray-600">Manage user roles, account status, and accounts.</p>
       </div>
 
       {error && (
@@ -111,8 +134,16 @@ function AdminUsers() {
                   <tr key={u._id} className={`hover:bg-gray-50 ${!u.isActive ? 'opacity-60' : ''}`}>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <span className="flex items-center justify-center w-9 h-9 rounded-full bg-orange-100 text-orange-700 font-bold text-sm">
-                          {u.name.charAt(0).toUpperCase()}
+                        <span className="flex items-center justify-center w-9 h-9 rounded-full bg-orange-100 text-orange-700 font-bold text-sm overflow-hidden">
+                          {u.profileImage ? (
+                            <img
+                              src={u.profileImage}
+                              alt={u.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            u.name.charAt(0).toUpperCase()
+                          )}
                         </span>
                         <div className="min-w-0">
                           <p className="font-medium text-gray-900 truncate">{u.name}</p>
@@ -182,6 +213,20 @@ function AdminUsers() {
                           ) : null}
                           {u.isActive ? 'Disable' : 'Enable'}
                         </button>
+                        {currentUser?._id !== u._id && (
+                          <button
+                            onClick={() => handleDelete(u)}
+                            disabled={busyId === u._id}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-red-200 text-red-600 hover:bg-red-500 hover:text-white disabled:opacity-50"
+                          >
+                            {busyId === u._id ? (
+                              <Loader className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-3.5 h-3.5" />
+                            )}
+                            Delete
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
