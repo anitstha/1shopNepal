@@ -12,7 +12,7 @@ import {
   ChevronDown,
   LogOut,
 } from "lucide-react";
-import { categoryApi } from "../../services/api";
+import { categoryApi, toAbsoluteUrl } from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
 
@@ -220,7 +220,7 @@ function Navbar() {
                   <span className="flex items-center justify-center w-8 h-8 rounded-full bg-neutral-900 text-white font-bold text-sm overflow-hidden">
                     {user.profileImage ? (
                       <img
-                        src={user.profileImage}
+                        src={toAbsoluteUrl(user.profileImage)}
                         alt={user.name}
                         className="w-full h-full object-cover"
                       />

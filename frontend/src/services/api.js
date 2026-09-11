@@ -2,6 +2,11 @@ import { getToken } from '../utils/auth'
 
 const API_URL = 'https://oneshopnepal-backend.onrender.com/api'
 
+const FILE_ORIGIN = API_URL.replace(/\/api\/?$/, '')
+
+export const toAbsoluteUrl = (path) =>
+  !path ? '' : path.startsWith('http') ? path : `${FILE_ORIGIN}${path}`
+
 const request = async (path, options = {}) => {
   const headers = {
     'Content-Type': 'application/json',

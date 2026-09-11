@@ -74,11 +74,11 @@ function Hero() {
       <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-white to-transparent" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 sm:pt-16 pb-16 sm:pb-24 lg:py-20">
-        <div className="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+        <div className="grid lg:grid-cols-12 gap-10 sm:gap-12 lg:gap-8 items-center">
           {/* Left column — copy, search, CTA, categories */}
           <div className="lg:col-span-7">
             <h1
-              className="hero-rise text-5xl sm:text-6xl xl:text-[4rem] font-bold text-neutral-950 leading-[1.06] tracking-tight"
+              className="hero-rise text-4xl sm:text-5xl lg:text-6xl xl:text-[4rem] font-bold text-neutral-950 leading-[1.12] sm:leading-[1.08] lg:leading-[1.06] tracking-tight"
               style={{ animationDelay: '0.05s' }}
             >
               Everything you need,
@@ -88,7 +88,7 @@ function Hero() {
             </h1>
 
             <p
-              className="hero-rise mt-5 text-lg text-neutral-500 max-w-lg leading-relaxed"
+              className="hero-rise mt-5 text-base sm:text-lg text-neutral-500 max-w-lg leading-relaxed"
               style={{ animationDelay: '0.25s' }}
             >
               Electronics, fashion, groceries and more — at prices you&apos;ll
@@ -107,11 +107,11 @@ function Hero() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search products..."
-                className="w-full pl-13 pr-28 py-4 rounded-full border border-neutral-200 bg-white shadow-lg shadow-neutral-900/5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-shadow"
+                className="w-full pl-11 pr-28 sm:pl-13 sm:pr-32 py-4 rounded-full border border-neutral-200 bg-white shadow-lg shadow-neutral-900/5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-shadow"
               />
               <button
                 type="submit"
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-neutral-900 rounded-full hover:bg-black transition-colors"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 inline-flex items-center gap-1.5 sm:gap-2 px-4 sm:px-5 py-2.5 text-sm font-semibold text-white bg-neutral-900 rounded-full hover:bg-black transition-colors"
               >
                 Search
                 <ArrowRight className="w-3.5 h-3.5" />

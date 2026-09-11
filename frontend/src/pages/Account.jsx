@@ -13,6 +13,7 @@ import {
   ImageOff,
 } from 'lucide-react'
 import Seo from '../components/common/Seo'
+import { toAbsoluteUrl } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 
 const inputClass =
@@ -184,7 +185,7 @@ function Account() {
               <div className="w-14 h-14 rounded-full bg-neutral-900 text-white flex items-center justify-center text-xl font-bold overflow-hidden">
                 {user?.profileImage ? (
                   <img
-                    src={user.profileImage}
+                    src={toAbsoluteUrl(user?.profileImage)}
                     alt={user?.name}
                     className="w-full h-full object-cover"
                   />

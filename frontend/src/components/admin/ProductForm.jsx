@@ -182,7 +182,7 @@ function ProductForm({ isEdit = false }) {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className={labelCls}>Category *</label>
             <select
@@ -205,7 +205,7 @@ function ProductForm({ isEdit = false }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid gap-4 sm:grid-cols-3">
           <div>
             <label className={labelCls}>Price (Rs.) *</label>
             <input
@@ -280,7 +280,7 @@ function ProductForm({ isEdit = false }) {
                   <button
                     type="button"
                     onClick={() => removeImage(i)}
-                    className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                     aria-label="Remove image"
                   >
                     <X className="w-3.5 h-3.5" />

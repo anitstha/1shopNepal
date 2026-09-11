@@ -121,7 +121,7 @@ function ProductCard({ product }) {
                 Rs. {salePrice.toLocaleString()}
               </span>
               {discount > 0 && (
-                <span className="text-sm text-neutral-400 line-through">
+                <span className="hidden sm:inline text-sm text-neutral-400 line-through">
                   Rs. {regularPrice.toLocaleString()}
                 </span>
               )}

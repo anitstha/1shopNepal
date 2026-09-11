@@ -14,7 +14,7 @@ function ReviewItem({ review, isOwner, isAdmin, onEdit, onDelete }) {
 
   return (
     <div className="bg-white border border-gray-200 rounded-2xl p-5">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
             <UserIcon className="w-5 h-5 text-gray-500" />

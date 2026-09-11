@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import { Loader2, Search, Shield, ShieldCheck, User as UserIcon, Loader, Trash2 } from 'lucide-react'
-import { adminApi } from '../../services/api'
+import { adminApi, toAbsoluteUrl } from '../../services/api'
 import { useAuth } from '../../context/AuthContext'
 
 function AdminUsers() {
@@ -137,7 +137,7 @@ function AdminUsers() {
                         <span className="flex items-center justify-center w-9 h-9 rounded-full bg-orange-100 text-orange-700 font-bold text-sm overflow-hidden">
                           {u.profileImage ? (
                             <img
-                              src={u.profileImage}
+                              src={toAbsoluteUrl(u.profileImage)}
                               alt={u.name}
                               className="w-full h-full object-cover"
                             />

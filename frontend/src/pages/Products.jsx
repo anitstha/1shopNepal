@@ -254,7 +254,7 @@ function Products() {
               </div>
 
               {data.pages > 1 && (
-                <div className="mt-10 flex items-center justify-center gap-2">
+                <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
                   <button
                     onClick={() => updateParams({ page: page - 1 })}
                     disabled={page <= 1}
@@ -266,7 +266,7 @@ function Products() {
                     <button
                       key={i}
                       onClick={() => updateParams({ page: i + 1 })}
-                      className={`w-10 h-10 text-sm font-medium rounded-lg ${
+                      className={`hidden sm:inline-flex w-10 h-10 items-center justify-center text-sm font-medium rounded-lg ${
                         page === i + 1
                           ? 'bg-orange-600 text-white'
                           : 'border border-gray-300 hover:bg-gray-50'

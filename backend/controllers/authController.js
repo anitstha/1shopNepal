@@ -4,8 +4,15 @@ const asyncHandler = require('../utils/asyncHandler')
 const path = require('path')
 const fs = require('fs')
 const crypto = require('crypto')
+const cloudinary = require('cloudinary').v2
 
 const AVATAR_DIR = path.join(__dirname, '..', 'uploads', 'avatars')
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+})
 
 const saveAvatarLocally = (buffer, originalname) => {
   if (!fs.existsSync(AVATAR_DIR)) {
@@ -15,6 +22,24 @@ const saveAvatarLocally = (buffer, originalname) => {
   const filename = `${Date.now()}-${crypto.randomBytes(6).toString('hex')}${ext}`
   fs.writeFileSync(path.join(AVATAR_DIR, filename), buffer)
   return `/uploads/avatars/${filename}`
+}
+
+const uploadToCloudinary = (buffer) =>
+  new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: '1shopnepal/avatars', resource_type: 'image' },
+      (err, result) => (err ? reject(err) : resolve(result.secure_url))
+    )
+    stream.end(buffer)
+  })
+
+// Cloudinary is used when configured; otherwise fall back to local disk so the
+// app still works in development without Cloudinary credentials.
+const uploadAvatar = async (buffer, originalname) => {
+  if (process.env.CLOUDINARY_CLOUD_NAME) {
+    return uploadToCloudinary(buffer)
+  }
+  return saveAvatarLocally(buffer, originalname)
 }
 
 const buildUserPayload = (user, { withToken = true } = {}) => ({
@@ -168,8 +193,10 @@ const uploadProfileImage = asyncHandler(async (req, res) => {
     throw new Error('No image file was uploaded')
   }
 
-  const relativePath = saveAvatarLocally(file.buffer, file.originalname)
-  const imageUrl = `${req.protocol}://${req.get('host')}${relativePath}`
+  const saved = await uploadAvatar(file.buffer, file.originalname)
+  const imageUrl = saved.startsWith('http')
+    ? saved
+    : `${req.protocol}://${req.get('host')}${saved}`
 
   const user = await User.findById(req.user._id)
   if (!user) {

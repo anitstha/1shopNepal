@@ -114,7 +114,7 @@ function CategoryPage() {
       ) : (
         <div className="animate-pulse my-6">
           <div className="h-8 w-56 bg-gray-200 rounded mb-2" />
-          <div className="h-4 w-80 bg-gray-200 rounded" />
+          <div className="h-4 w-56 sm:w-80 bg-gray-200 rounded" />
         </div>
       )}
 

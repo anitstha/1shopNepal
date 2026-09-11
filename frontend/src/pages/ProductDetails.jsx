@@ -299,7 +299,7 @@ function ProductDetails() {
             )}
           </div>
 
-          <div className="mt-5 flex items-baseline gap-3">
+          <div className="mt-5 flex flex-wrap items-baseline gap-3">
             <span className="text-3xl font-bold text-gray-900">
               Rs. {salePrice.toLocaleString()}
             </span>

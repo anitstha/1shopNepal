@@ -39,7 +39,7 @@ function DealSection() {
               and more. Grab them before they&apos;re gone.
             </p>
 
-            <div className="mt-7 flex items-center gap-3">
+            <div className="mt-7 flex flex-wrap items-center gap-3">
               <Clock3 className="w-5 h-5 text-white/60" />
               {countdown.map((t, i) => (
                 <div key={t.unit} className="flex items-center gap-3">
