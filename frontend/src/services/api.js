@@ -1,6 +1,6 @@
 import { getToken } from '../utils/auth'
 
-const API_URL = 'http://localhost:5000/api'
+const API_URL = 'https://oneshopnepal-backend.onrender.com/api'
 
 const request = async (path, options = {}) => {
   const headers = {
