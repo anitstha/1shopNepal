@@ -1,12 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Tag, ArrowRight, Clock3, Zap } from 'lucide-react'
-
-const countdown = [
-  { value: '03', unit: 'Days' },
-  { value: '12', unit: 'Hrs' },
-  { value: '45', unit: 'Min' },
-  { value: '20', unit: 'Sec' },
-]
+import { Tag, ArrowRight, Zap } from 'lucide-react'
 
 function DealSection() {
   return (
@@ -39,28 +32,12 @@ function DealSection() {
               and more. Grab them before they&apos;re gone.
             </p>
 
-            <div className="mt-7 flex flex-wrap items-center gap-3">
-              <Clock3 className="w-5 h-5 text-white/60" />
-              {countdown.map((t, i) => (
-                <div key={t.unit} className="flex items-center gap-3">
-                  <div className="text-center w-14 py-2.5 rounded-xl border border-white/15 bg-white/10 backdrop-blur-md">
-                    <div className="text-xl font-bold leading-none">{t.value}</div>
-                    <div className="mt-1 text-[10px] uppercase tracking-wider text-white/60">
-                      {t.unit}
-                    </div>
-                  </div>
-                  {i < countdown.length - 1 && (
-                    <span className="text-white/40 font-bold">:</span>
-                  )}
-                </div>
-              ))}
             </div>
-          </div>
 
           <div className="flex lg:justify-end">
             <Link
               to="/products"
-              className="inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-neutral-900 bg-white hover:bg-amber-300 rounded-full transition-colors shadow-xl shadow-black/30"
+              className="inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-neutral-900 bg-white hover:bg-orange-900 hover:text-white rounded-full transition-colors shadow-xl shadow-black/30"
             >
               <Tag className="w-5 h-5" />
               Grab the Deals

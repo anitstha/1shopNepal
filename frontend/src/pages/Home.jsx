@@ -1,9 +1,8 @@
-import Hero from '../components/home/Hero'
+import HeroBanner from '../components/home/HeroBanner'
 import CategoriesSection from '../components/home/CategoriesSection'
 import FeaturedProducts from '../components/home/FeaturedProducts'
 import DealSection from '../components/home/DealSection'
 import PopularProducts from '../components/home/PopularProducts'
-import WhyChooseUs from '../components/home/WhyChooseUs'
 import Seo from '../components/common/Seo'
 import { siteUrl } from '../utils/seo'
 
@@ -43,12 +42,11 @@ function Home() {
         canonical="/"
         jsonLd={jsonLd}
       />
-      <Hero />
+      <HeroBanner />
       <CategoriesSection />
       <FeaturedProducts />
       <DealSection />
       <PopularProducts />
-      <WhyChooseUs />
     </div>
   )
 }
